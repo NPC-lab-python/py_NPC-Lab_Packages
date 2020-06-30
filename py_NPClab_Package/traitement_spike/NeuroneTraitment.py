@@ -10,11 +10,11 @@ from numpy.core.multiarray import ndarray
 from pandas import DataFrame, Series
 from quantities.quantity import Quantity
 
-from NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx, ExtractEvent, EventRewardNeuralynx
-from NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalEventBasetime
-from NPClab_Package.utilitaire_load.basic_load import LoadData, ImportNeuralynx, NeuralynxFilesSpike
-from NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
-from NPClab_Package.utilitaire_traitement.Decorateur import mesure
+from py_NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx, ExtractEvent, EventRewardNeuralynx
+from py_NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalEventBasetime
+from py_NPClab_Package.utilitaire_load.basic_load import LoadData, ImportNeuralynx, NeuralynxFilesSpike
+from py_NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
+from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
 
 import logging
 logging.basicConfig(level=logging.DEBUG)

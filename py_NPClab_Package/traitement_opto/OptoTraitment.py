@@ -1,4 +1,4 @@
-from NPClab_Package.traitement_event.EventTraitement import ClassificationPattern
+from py_NPClab_Package.traitement_event.EventTraitement import ClassificationPattern
 from pandas import DataFrame, Series
 import pandas as pd
 import numpy as np
@@ -103,8 +103,8 @@ class AnalyseOpto(ClassificationPattern):
 if __name__ == "__main__":
     # -------------------------------------------- partie event ---------------------------------------------------
 
-    from NPClab_Package.utilitaire_load.basic_load import ImportNeuralynx, LoadData
-    from NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx, EventRewardNeuralynx
+    from py_NPClab_Package.utilitaire_load.basic_load import ImportNeuralynx, LoadData
+    from py_NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx, EventRewardNeuralynx
 
     dir_data: str = r'Y:\python\import_neuralynxv2\data\pinp8 06022020'
 
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     # -------------------------------------------- partie reload specifique neurone ---------------------------------
 
-    from NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
+    from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
 
     dir_save = r'Y:\python\import_neuralynxv2\data\pinp8 06022020\save'
     name = 'segment0_neurone0'
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     # ------------------------------------- parti reload specification segment ----------------------------------
 
-    from NPClab_Package.utilitaire_load.basic_load import SegmentFilesSerialiser
+    from py_NPClab_Package.utilitaire_load.basic_load import SegmentFilesSerialiser
 
     dir_save = r'Y:\python\import_neuralynxv2\data\pinp8 06022020\save'
     name = 'segment_infos'
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     time_pattern = pattern.time_pattern(start_stop_time=all_info, reward_time=all_event['num segment : 0']['time'])
     val_time_up, bin_time_up, val_time_down, bin_time_down, data_brute = pattern.extract_time_spike(neurone=neurone, time_pattern=time_pattern)
 
-    from NPClab_Package.utilitaire_plot.BasicPlotSpike import GenericPlotV2
+    from py_NPClab_Package.utilitaire_plot.BasicPlotSpike import GenericPlotV2
 
     plot = GenericPlotV2()
 

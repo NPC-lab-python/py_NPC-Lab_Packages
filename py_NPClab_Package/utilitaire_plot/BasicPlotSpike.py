@@ -4,17 +4,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from NPClab_Package.utlilitaire_saving.Saving_traitment import SavingMethodes
+from py_NPClab_Package.utlilitaire_saving.Saving_traitment import SavingMethodes
 from sklearn.neighbors import KernelDensity
 from numpy.core.multiarray import ndarray
 from typing import List
-from NPClab_Package.utilitaire_load.basic_load import LoadData, ImportNeuralynx
-from NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx
+from py_NPClab_Package.utilitaire_load.basic_load import LoadData, ImportNeuralynx
+from py_NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx
 import pandas as pd
 from pandas import DataFrame
 from pandas import Series
-from NPClab_Package.utilitaire_traitement.Decorateur import mesure
-from NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalRawSignal
+from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
+from py_NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalRawSignal
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -489,7 +489,7 @@ if __name__ == "__main__":
 
 
     # -------------------------------------------- partie reload specifique neurone ---------------------------------
-    from NPClab_Package.utilitaire_load import NeuroneFilesSerialiser
+    from py_NPClab_Package.utilitaire_load import NeuroneFilesSerialiser
 
     dir_save = r'/data/cplx07 + bsl/save'
     name = 'segment1_neurone0'

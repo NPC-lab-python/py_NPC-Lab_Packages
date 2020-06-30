@@ -6,8 +6,8 @@ from matplotlib.axes._axes import Axes
 import numpy as np
 from numpy.core.multiarray import ndarray
 from typing import List, Union, Tuple
-from NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabview
-from NPClab_Package.traitement_deeplabcut.DeepLabCut_traitment import PreFormDLC
+from py_NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabview
+from py_NPClab_Package.traitement_deeplabcut.DeepLabCut_traitment import PreFormDLC
 
 Norme_Coordonnee_Vecteur = Tuple[Series, Series]
 Trajectoire = Tuple[ndarray, ndarray, ndarray]
@@ -225,7 +225,7 @@ class SpecifiquePlot(object):
         fig1.show()
 
 if __name__ == '__main__':
-    from NPClab_Package.utilitaire_load import LabviewFilesReward, LabviewFilesTrajectory, LoadData
+    from py_NPClab_Package.utilitaire_load import LabviewFilesReward, LabviewFilesTrajectory, LoadData
     from traitement_labview.Labview_traitment import AnalyseFromLabview
 
     # ------------------------------------- parti import data labview ---------------------------------------------------

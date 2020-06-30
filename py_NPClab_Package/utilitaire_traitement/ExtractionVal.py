@@ -4,7 +4,7 @@ from quantities.quantity import Quantity
 import numpy as np
 from numpy.core.multiarray import ndarray
 from typing import List, Dict, Union, Tuple
-from NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalEventBasetime, GlobalEventSignal
+from py_NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalEventBasetime, GlobalEventSignal
 
 import concurrent
 import time as chrono

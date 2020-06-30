@@ -9,8 +9,8 @@ from collections import defaultdict
 import shelve as sh
 import logging
 
-from NPClab_Package.utilitaire_traitement.Decorateur import mesure
-from NPClab_Package.utilitaire_neuralynx.Load_neuralynx import RawSignals
+from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
+from py_NPClab_Package.utilitaire_neuralynx.Load_neuralynx import RawSignals
 
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('matplotlib').setLevel(logging.WARNING)

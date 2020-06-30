@@ -2,7 +2,7 @@ from neo import AnalogSignal
 from neo.core.event import Event
 from neo.core.block import Block
 from neo.io.neuralynxio import NeuralynxIO
-import joblib
+# import joblib
 
 """
 Création de la classe compléte
@@ -14,7 +14,7 @@ import numpy as np
 from numpy.core.multiarray import ndarray
 import time as chrono
 from quantities.quantity import Quantity
-from NPClab_Package.utilitaire_traitement.Decorateur import mesure
+from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
 
 
 """

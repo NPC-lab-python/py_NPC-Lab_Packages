@@ -7,8 +7,8 @@ from numpy.core.multiarray import ndarray
 from typing import List, Union, Tuple
 from collections import defaultdict
 
-from NPClab_Package.utilitaire_traitement.Decorateur import mesure
-from NPClab_Package.traitement_deeplabcut.DeepLabCut_traitment import PreFormDLC
+from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
+from py_NPClab_Package.traitement_deeplabcut.DeepLabCut_traitment import PreFormDLC
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -386,8 +386,8 @@ if __name__ == "__main__":
     # data_tracking_AFL = data_AFL.load_data_from_labview(trajectoire, reward)
 
 # --------------------------- traitement DLC ---------------------------------------------
-    from NPClab_Package.traitement_deeplabcut.DeepLabCut_traitment import PreFormDLC
-    from NPClab_Package.utilitaire_load import LoadData, DeepLabCutFileImport
+    from py_NPClab_Package.traitement_deeplabcut.DeepLabCut_traitment import PreFormDLC
+    from py_NPClab_Package.utilitaire_load import LoadData, DeepLabCutFileImport
     from utlilitaire_saving.Saving_traitment import SavingMethodes
     dir_DLC = r'/data/trajectoire_tarek_deeplapcut/DLC_data'
     DLC_brute = LoadData.init_data(DeepLabCutFileImport, dir_DLC,

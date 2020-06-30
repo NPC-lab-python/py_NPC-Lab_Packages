@@ -1,4 +1,4 @@
-from NPClab_Package.utilitaire_load import ImportNeuralynx, LoadData
+from py_NPClab_Package.utilitaire_load import ImportNeuralynx, LoadData
 
 import time as chrono
 #

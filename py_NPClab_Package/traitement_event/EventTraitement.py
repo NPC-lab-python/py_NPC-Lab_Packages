@@ -4,10 +4,10 @@ import numpy as np
 from numpy.core.multiarray import ndarray
 from pathlib import Path
 from typing import List, Dict, Union, Tuple, Any
-from NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalEventBasetime, GlobalEventSignal
-from NPClab_Package.utilitaire_load.basic_load import LoadData, ImportNeuralynx
-from NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
-from NPClab_Package.utilitaire_traitement.ExtractionVal import ExtractEvent
+from py_NPClab_Package.utilitaire_neuralynx.Load_neuralynx import GlobalEventBasetime, GlobalEventSignal
+from py_NPClab_Package.utilitaire_load.basic_load import LoadData, ImportNeuralynx
+from py_NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
+from py_NPClab_Package.utilitaire_traitement.ExtractionVal import ExtractEvent
 
 import time as chrono
 

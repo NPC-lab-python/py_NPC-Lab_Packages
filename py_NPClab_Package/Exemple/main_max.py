@@ -1,9 +1,9 @@
 # -*-coding:utf-8 -*-
 import numpy as np
 import pandas as pd
-from NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward, LabviewFilesTrajectory, LoadData
-from NPClab_Package.utilitaire_traitement.TrajectoryTraitement import BasicTraitmentTrajectory
-from NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabview
+from py_NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward, LabviewFilesTrajectory, LoadData
+from py_NPClab_Package.utilitaire_traitement.TrajectoryTraitement import BasicTraitmentTrajectory
+from py_NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabview
 
 
 #------------------------------------- parti import data labview ---------------------------------------------------
@@ -25,7 +25,7 @@ from NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabvi
 # data_traiter_AFL = traitment_AFL.correction(data_AFL, data_AFL.format_correction)
 
 # ------------------------------------- parti preparation des données pour le plot ---------
-# from NPClab_Package.utilitaire_traitement.PreFormatData import PreFormatData
+# from py_NPClab_Package.utilitaire_traitement.PreFormatData import PreFormatData
 #
 # data_formater = PreFormatData()
 #
@@ -41,8 +41,8 @@ from NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabvi
 # plotcomportement.plot_traj(data_tracking_AFL, data_AFL.couple_de_points[0])
 
 # -------------------------------------------- partie event ---------------------------------------------------
-from NPClab_Package.utilitaire_load.basic_load import ImportNeuralynx, LoadData
-from NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx, EventRewardNeuralynx
+from py_NPClab_Package.utilitaire_load.basic_load import ImportNeuralynx, LoadData
+from py_NPClab_Package.traitement_event.EventTraitement import EventFileNeuralynx, EventRewardNeuralynx
 
 
 dir_data: str = r'Y:\python\import_neuralynxv2\data\pinp8 06022020'
@@ -67,8 +67,8 @@ start_stim, start_stim_index = reward.set_reward(reward_time=all_event['num segm
 start_stim_index = start_stim_index.astype(dtype=int)
 
 # ------------------------------------ parti spike -----------------------------------------
-from NPClab_Package.traitement_spike.NeuroneTraitment import Segment, Spike, PreFormatSpike, CleaningSpikeTime
-from NPClab_Package.utilitaire_load.basic_load import NeuralynxFilesSpike
+from py_NPClab_Package.traitement_spike.NeuroneTraitment import Segment, Spike, PreFormatSpike, CleaningSpikeTime
+from py_NPClab_Package.utilitaire_load.basic_load import NeuralynxFilesSpike
 
 dir_spikefile: str = r'Y:\python\import_neuralynxv2\data\pinp8 06022020\clustering\*.txt'
 
@@ -95,7 +95,7 @@ del spike, segment_infos, segment_data, e
 
 
 # -------------------------------------------- partie reload specifique neurone ---------------------------------
-from NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
+from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
 
 dir_save = r'Y:\python\import_neuralynxv2\data\pinp8 06022020\save'
 name = 'segment0_neurone0'
@@ -103,7 +103,7 @@ neurone = LoadData.init_data(NeuroneFilesSerialiser, dir_save, name)
 
 
 # ------------------------------------- parti reload specification segment ----------------------------------
-from NPClab_Package.utilitaire_load.basic_load import SegmentFilesSerialiser
+from py_NPClab_Package.utilitaire_load.basic_load import SegmentFilesSerialiser
 
 dir_save = r'Y:\python\import_neuralynxv2\data\pinp8 06022020\save'
 name = 'segment_infos'
@@ -111,7 +111,7 @@ num_segment = 0
 base_time_segment = LoadData.init_data(SegmentFilesSerialiser, dir_save, name, num_segment)
 
 # -------------------------------------- parti recallage omission sur temps spike --------------------------
-# from NPClab_Package.traitement_event.EventTraitement import EventFromOther
+# from py_NPClab_Package.traitement_event.EventTraitement import EventFromOther
 #
 # omission_recallage = EventFromOther()
 # omission_recallage.start(np.array(omission_time), base_time_segment.data, reward.reward_time_ref_rmz)
@@ -128,7 +128,7 @@ neurone_spike_bool = new_spike.load_neurone()
 # neurone_spike_omission_bool = new_omission.load_other()
 
 # ------------------------------------- parti preparation des données pour le plot avec spike---------
-from NPClab_Package.utilitaire_plot.BasicPlotSpike import GenericPlotV2
+from py_NPClab_Package.utilitaire_plot.BasicPlotSpike import GenericPlotV2
 
 raw_brute = LoadData.init_data(ImportNeuralynx, dir_data, 'csc')
 
@@ -141,7 +141,7 @@ plot = GenericPlotV2()
 #                                                 name='reward')
 # plot.plot_kernel_density(reward_plot_data, 'reward')
 # -------------------------------------------- partie plot spike ----------------------------------------------
-from NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
+from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
 
 # dir_save = r'Y:\python\import_neuralynxv2\data\cplx07 + bsl\save'
 # name = 'segment1_neurone0'

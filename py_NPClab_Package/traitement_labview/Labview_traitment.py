@@ -12,11 +12,11 @@ import numpy as np
 from scipy.interpolate import interp1d
 from numpy.core.multiarray import ndarray
 from typing import List, Dict, Union, Tuple
-from NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward,LabviewFilesTrajectory,LoadData
-from NPClab_Package.utilitaire_traitement.ExtractionVal import ExtractEvent
-from NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
+from py_NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward,LabviewFilesTrajectory,LoadData
+from py_NPClab_Package.utilitaire_traitement.ExtractionVal import ExtractEvent
+from py_NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
 import logging
-from NPClab_Package.utilitaire_traitement.Decorateur import mesure
+from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
 from collections import defaultdict
 
 Norme_Coordonnee_Vecteur = Tuple[Series, Series]
