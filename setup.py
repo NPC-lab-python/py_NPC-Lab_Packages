@@ -1,8 +1,5 @@
 from setuptools import setup, find_packages
 
-with open('requirements.txt') as f:
-    requirements = f.readlines()
-
 setup(
     name='py_NPClab-Package',
     version='0.0.1',
