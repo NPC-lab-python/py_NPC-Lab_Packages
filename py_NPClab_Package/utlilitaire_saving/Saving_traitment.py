@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
 from collections import defaultdict
-from NPClab_Package.utilitaire_traitement.Decorateur import mesure
+from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class VerifDossier(object):
 
-    def existe_folder_saving(self, dir_data: str, name_folder: str = None) -> Tuple[int, str]:
+    def existe_folder_saving(self, dir_data: str = None, name_folder: str = None, other_path: str = None) -> Tuple[int, str]:
         """
         Cette methode permet de vérifier si le dossier "save" existe et sinon de le créer.
 
@@ -28,10 +28,16 @@ class VerifDossier(object):
         if isinstance(name_folder, type(None)):
             name_folder = 'save'
 
-        folder_current = os.getcwd()
-        logging.debug(f'Dossier courant actuel {folder_current}')
-        os.chdir(dir_data)
-        new_folder_current = os.getcwd()
+        if isinstance(other_path, type(None)) and not isinstance(dir_data, type(None)):
+            folder_current = os.getcwd()
+            logging.debug(f'Dossier courant actuel {folder_current}')
+            os.chdir(dir_data)
+            new_folder_current = os.getcwd()
+        else:
+            logging.debug(f'Dossier courant actuel {other_path}')
+            os.chdir(other_path)
+            new_folder_current = os.getcwd()
+
         name = f'\\{name_folder}'
 
         if os.path.isdir(new_folder_current + name):
@@ -83,7 +89,7 @@ class SaveSerialisation(VerifDossier):
         save_conf.close()
         logging.debug(f'Création du fichier {name}')
 
-    def _get_conf_(self, dir_save_conf: str, name: str, name_folder: str = None) -> Tuple[int, str]:
+    def _get_conf_(self, name: str, name_folder: str = None, dir_save_conf: str = None, other_path: str = None) -> Tuple[int, str]:
         """
         C'est la première méthode appelé.
         elle permet de vérifier la présence du fichier et d'oriente
@@ -93,21 +99,37 @@ class SaveSerialisation(VerifDossier):
 
         :param dir_save_conf:
         :param name:
-        :return: retourne un tuple contenant un [0]int pour absent ou present
-        et le [1] chemin
+        :param name_folder:
+        :return: retourne un tuple contenant en [0] un "int" pour absent ou present
+        et en [1] le chemin
         """
-        if isinstance(name_folder, type(None)):
-            dir_data = self.existe_folder_saving(dir_save_conf)
-        else:
-            dir_data = self.existe_folder_saving(dir_data=dir_save_conf, name_folder=name_folder)
+        if isinstance(other_path, type(None)) and not isinstance(dir_save_conf, type(None)):
+            if isinstance(name_folder, type(None)):
+                dir_data = self.existe_folder_saving(dir_save_conf)
+            else:
+                dir_data = self.existe_folder_saving(dir_data=dir_save_conf, name_folder=name_folder)
 
-        path_save = f'{dir_data[1]}\\*.dat'
-        path = [i for i in glob.glob(path_save) if i.find(f'.dat')]
-        e = [i for i in path if i.find(name) != -1]
-        if len(e) == 0:
-            return 1, dir_data[1]
-        else:
-            return 0, dir_data[1]
+            path_save = f'{dir_data[1]}\\*.dat'
+            path = [i for i in glob.glob(path_save) if i.find(f'.dat')]
+            e = [i for i in path if i.find(name) != -1]
+            if len(e) == 0:
+                return 1, dir_data[1]
+            else:
+                return 0, dir_data[1]
+        if not isinstance(other_path, type(None)) and isinstance(dir_save_conf, type(None)):
+            dir_save_conf = other_path
+            if isinstance(name_folder, type(None)):
+                dir_data = self.existe_folder_saving(other_path)
+            else:
+                dir_data = self.existe_folder_saving(other_path=other_path, name_folder=name_folder)
+
+            path_save = f'{dir_data[1]}\\*.dat'
+            path = [i for i in glob.glob(path_save) if i.find(f'.dat')]
+            e = [i for i in path if i.find(name) != -1]
+            if len(e) == 0:
+                return 1, dir_data[1]
+            else:
+                return 0, dir_data[1]
 
 
 class SavingMethodes(object):

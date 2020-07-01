@@ -84,6 +84,9 @@ class PreFormatSpike(SaveSerialisation):
     """
 
     def __init__(self, dir_data: str, spike_files: NeuralynxFilesSpike, segment_infos: defaultdict, all_event: defaultdict):
+        """
+
+        """
         self.dir_data: str = dir_data
         self.segment_infos = segment_infos
         self.spike_files = spike_files

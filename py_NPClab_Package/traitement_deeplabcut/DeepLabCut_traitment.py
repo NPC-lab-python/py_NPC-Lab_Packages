@@ -14,8 +14,8 @@ import numpy as np
 from scipy.interpolate import interp1d
 from numpy.core.multiarray import ndarray
 from typing import List, Dict, Union, Tuple
-from NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward, LabviewFilesTrajectory, LoadData, DeepLabCutFileImport
-from NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
+from py_NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward, LabviewFilesTrajectory, LoadData, DeepLabCutFileImport
+from py_NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
 
 import logging
 from collections import defaultdict, OrderedDict, ChainMap

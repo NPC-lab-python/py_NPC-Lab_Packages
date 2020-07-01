@@ -66,7 +66,7 @@ class SpecifiquePlot(object):
                 for idx, ax in enumerate(axis_list):
                     # ax.plot(self.data[args[idx][0]][171:175], self.data[args[idx][1]][171:175], colors[idx]+'o-')
                     ax.plot(data[items_traj[0]], data[items_traj[1]], colors[idx] + '-')
-                    ax.set(xlim=(0, 1800), ylim=(0, 1800))
+                    ax.set(xlim=(0, 800), ylim=(0, 800))
                     ax.set_xlabel(args[1])
         else:
             ax: Axes

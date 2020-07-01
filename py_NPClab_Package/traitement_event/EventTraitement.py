@@ -67,29 +67,43 @@ class EventFromOther(ExtractEvent):
 
 class ClassificationPattern(SaveSerialisation):
 
-    def _set_pattern_(self, dir_profile_pattern: str, name: str, time_up: float = None,
-                      time_down: float= None, pattern: str = None) -> Union[Dict]:
+    def _set_pattern_(self, name: str, time_up: float = None, dir_profile_pattern: str = None,
+                      time_down: float = None, pattern: str = None, other_path: str = None) -> Union[Dict]:
         """
         le "A" correspond au time_up et le "B" au time_down
         :param name: correspond au nom du fichier (nom du profile)
         """
-        if isinstance(time_up, type(None)) and \
-            isinstance(time_down, type(None)) and isinstance(pattern, type(None)):
-            profile_pattern = self.load_data_serializer(path=dir_profile_pattern, name=name)
-            logging.debug(f'Fichier chargé : {name}')
-            return profile_pattern
+        if isinstance(other_path, type(None)) and not isinstance(dir_profile_pattern, type(None)):
+            # dir_profile_pattern = other_path
 
-        else:
-            saving = self._get_conf_(dir_save_conf=dir_profile_pattern, name=name, name_folder='profile_pattern')
-            if saving[0] == 1:
-                profile_pattern = {'time_up': time_up, 'time_down': time_down, 'pattern': pattern, 'name': name}
-                self._set_conf_(name=name, dir_save_conf=saving[1], data=profile_pattern)
-                logging.debug(f'Fichier sauvegardé : {name}')
+            if isinstance(time_up, type(None)) and \
+                isinstance(time_down, type(None)) and isinstance(pattern, type(None)):
+                profile_pattern = self.load_data_serializer(path=dir_profile_pattern, name=name)
+                logging.debug(f'Fichier chargé : {name}')
+                return profile_pattern
 
-            # else:
-            #     logging.debug(f'chargement du fichier : {name}')
-            #     profile_pattern = self._chargement_fichier_data_(path=saving[1], name=name)
-            # return profile_pattern
+            else:
+                saving = self._get_conf_(dir_save_conf=dir_profile_pattern, name=name, name_folder='profile_pattern')
+                if saving[0] == 1:
+                    profile_pattern = {'time_up': time_up, 'time_down': time_down, 'pattern': pattern, 'name': name}
+                    self._set_conf_(name=name, dir_save_conf=saving[1], data=profile_pattern)
+                    logging.debug(f'Fichier sauvegardé : {name}')
+
+        if not isinstance(other_path, type(None)) and isinstance(dir_profile_pattern, type(None)):
+            dir_profile_pattern = other_path
+
+            if isinstance(time_up, type(None)) and \
+                    isinstance(time_down, type(None)) and isinstance(pattern, type(None)):
+                profile_pattern = self.load_data_serializer(path=dir_profile_pattern, name=name)
+                logging.debug(f'Fichier chargé : {name}')
+                return profile_pattern
+
+            else:
+                saving = self._get_conf_(other_path=other_path, name=name, name_folder='profile_pattern')
+                if saving[0] == 1:
+                    profile_pattern = {'time_up': time_up, 'time_down': time_down, 'pattern': pattern, 'name': name}
+                    self._set_conf_(name=name, dir_save_conf=saving[1], data=profile_pattern)
+                    logging.debug(f'Fichier sauvegardé : {name}')
 
     def get_profile(self, dir_pattern: str, name_pattern: str):
         """
@@ -98,8 +112,8 @@ class ClassificationPattern(SaveSerialisation):
         profile_pattern = self._set_pattern_(dir_profile_pattern=dir_pattern, name=name_pattern)
         return profile_pattern
 
-    def set_profile(self, dir_profile_pattern: str, time_up: float, time_down: float,
-                    pattern: str, name_profile: str):
+    def set_profile(self, time_up: float, time_down: float,
+                    pattern: str, name_profile: str,  dir_profile_pattern: str = None, other_path: str = None):
         """
         création du fichier profile pattern qu'il faudra reloader pour l'utiliser.
 
@@ -110,10 +124,14 @@ class ClassificationPattern(SaveSerialisation):
         :param time_down: correspond au temps non stimulé "B"
         :param pattern: correspond à la séquence alphabétique du pattern ex: 'CABAB'
         :param name_profile: correspond au nom du fichier (nom du profile)
-
+        :param other_path:
 
         """
-        profile_pattern = self._set_pattern_(dir_profile_pattern=dir_profile_pattern, time_up=time_up,
+        if not isinstance(other_path, type(None)):
+            profile_pattern = self._set_pattern_(other_path=other_path, time_up=time_up,
+                           time_down=time_down, pattern=pattern, name=name_profile)
+        if isinstance(other_path, type(None)) and not isinstance(dir_profile_pattern, type(None)):
+            profile_pattern = self._set_pattern_(dir_profile_pattern=dir_profile_pattern, time_up=time_up,
                            time_down=time_down, pattern=pattern, name=name_profile)
 
 

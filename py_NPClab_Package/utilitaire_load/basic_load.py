@@ -207,11 +207,49 @@ class NeuroneFilesSerialiser(object):
         def load(self, dir: str, name: str):
             return NeuroneFilesSerialiser(dir, name)
 
+class EventFilesSerialiser(object):
 
-class SegmentFilesSerialiser(object):
+    def __init__(self, dir: str, name: str):
+        self.dir: str = dir
+        self.path: List[str] = self._init_path_(dir, name)
+        self.name_file = self.path[0].split('\\')[-1]
+        self.data: defaultdict = self._manage_files_(name)
+
+    def _init_path_(self, dir: str, name: str) -> List[str]:
+        path_save = f'{dir}\\*.dat'
+        path = [i for i in glob.glob(path_save) if i.find(f'.dat')]
+        try:
+            assert len(path) > 0
+        except AssertionError as e:
+            logging.debug(f'Il y a un problème avec le chemin du fichier '
+                          f'ou le fichier "{name}" est introuvable ')
+            sys.exit()
+        e = [i for i in path if i.find(name) != -1]
+        return e
+    def _manage_files_(self,name):
+        data: dict = self._load_serialiser_file_(self.path, name)
+        data_file: defaultdict = data['all_event']
+        return data_file
+
+    def _load_serialiser_file_(self, path: List[str], name: str) -> dict:
+        with sh.open(path[0][:-4]) as data:
+            data_extract = data[name]
+            # data_extract = pd.Series(data_extract)
+        return data_extract
+
+
+    class InitLoader(object):
+        def load(self, dir: str, name: str):
+            return EventFilesSerialiser(dir, name)
+
+
+class SegmentBTFilesSerialiser(object):
     """
-    segment_infos est constitué de series de dictionnaire
+    "segment_infos" est constitué de series de dictionnaire
     chaque series est nomé et correspond à un segment
+    exemple : si la ssesion comporte deux expérimentations ("base_line et compléxité"),
+            segment0 correspond à la base_line
+            segment1 correspond à la compléxité
 
     """
 
@@ -234,6 +272,11 @@ class SegmentFilesSerialiser(object):
         return e
 
     def _manage_files_(self, num_segment: int, name: str) -> ndarray:
+        """
+        Cetteméthode permet de reloader le fichier "segment_infos" contenu dans le dossier
+        "save" créé précedent. Pour ne prendre que la "base_time".
+
+        """
         data: defaultdict = self._load_serialiser_file_(self.path, name)
         items_segment = {}
         for i in data.keys():
@@ -248,10 +291,58 @@ class SegmentFilesSerialiser(object):
             data_extract = data[name]
         return data_extract
 
-
     class InitLoader(object):
         def load(self, dir: str, name: str, num_segment: int):
-            return SegmentFilesSerialiser(dir, name, num_segment)
+            return SegmentBTFilesSerialiser(dir, name, num_segment)
+
+
+class SegmentFilesSerialiser(object):
+    """
+    "segment_infos" est constitué de series de dictionnaire
+    chaque series est nomé et correspond à un segment
+    exemple : si la ssesion comporte deux expérimentations ("base_line et compléxité"),
+            segment0 correspond à la base_line
+            segment1 correspond à la compléxité
+
+    """
+
+    def __init__(self, dir: str, name: str):
+        self.dir: str = dir
+        self.path: List[str] = self._init_path_(dir, name)
+        self.name_file = self.path[0].split('\\')[-1]
+        self.data: defaultdict = self._manage_files_(name=name)
+
+    def _init_path_(self, dir: str, name: str) -> List[str]:
+        path_save = f'{dir}\\*.dat'
+        path = [i for i in glob.glob(path_save) if i.find(f'.dat')]
+        try:
+            assert len(path) > 0
+        except AssertionError as e:
+            logging.debug(f'Il y a un problème avec le chemin du fichier '
+                          f'ou le fichier {name} est introuvable ')
+            sys.exit()
+        e = [i for i in path if i.find(name) != -1]
+        return e
+
+    def _manage_files_(self, name: str) -> defaultdict:
+        """
+        Cette méthode permet de reloader le fichier "segment_infos" contenu dans le dossier
+        "save" créé précedent.
+
+        """
+        data_file: defaultdict = self._load_serialiser_file_(self.path, name)
+        return data_file
+
+    @mesure
+    def _load_serialiser_file_(self, path: List[str], name: str) -> defaultdict:
+        with sh.open(path[0][:-4]) as data:
+            data_extract = data[name]
+        return data_extract
+
+
+    class InitLoader(object):
+        def load(self, dir: str, name: str):
+            return SegmentFilesSerialiser(dir, name)
 
 
 class DeepLabCutFileImport(ModelImport):
