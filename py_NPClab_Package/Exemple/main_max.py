@@ -5,10 +5,31 @@ from py_NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward, Lab
 from py_NPClab_Package.utilitaire_traitement.TrajectoryTraitement import BasicTraitmentTrajectory
 from py_NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabview
 
+from py_NPClab_Package.Exemple.CreationSegment import SegmentInit
+from py_NPClab_Package.Exemple.CreationEvent import EventInit
+from py_NPClab_Package.Exemple.TraitementNeurone import NeuroneInit
 
+
+dir_save: str = r'Y:\Analyse_maxime\cplx12\save'
+dir_data: str = r'Y:\Analyse_maxime\cplx12'
+dir_profile_pattern: str = r'Y:\Analyse_maxime\profile_pattern'
+dir_spikefile: str = r'Y:\Analyse_maxime\cplx12\clustering\*.txt'
+
+# ------------------------------------initialisation et creation du set de données ---------------------------
+
+event = EventInit(dir_data=dir_data)
+event.set_event()
+
+segment = SegmentInit(dir_data=dir_data, dir_save=dir_save)
+segment.set_segment()
+
+neurones = NeuroneInit(dir_data=dir_data, dir_save=dir_save, dir_spikefile=dir_spikefile)
+neurones.set_neurone(neurones=['neurone0_brute'], num_segment=0)
+
+# neurones.set_neurone(neurones=['neurone0_brute', 'neurone1_brute'], num_segment=0)
 #------------------------------------- parti import data labview ---------------------------------------------------
 
-dir_txt_traj = r'Y:\Analyse_maxime\cplx10\fichier_traj\*.txt'
+dir_txt_traj = r'Y:\Analyse_maxime\cplx11\fichier_traj\*.txt'
 
 # chargement de la trajectoire contient "x, y, point"
 trajectoire = LoadData.init_data(LabviewFilesTrajectory, dir_txt_traj)
@@ -45,13 +66,9 @@ data_formater.make_event_around(data=traitment_AFL.norme_vecteur, reward=omissio
 from py_NPClab_Package.traitement_event.EventTraitement import EventRewardNeuralynx
 from py_NPClab_Package.utilitaire_load.basic_load import EventFilesSerialiser, LoadData
 
-dir_save: str = r'Y:\Analyse_maxime\cplx10\save'
-dir_data: str = r'Y:\Analyse_maxime\cplx10'
-dir_profile_pattern: str = r'Y:\Analyse_maxime\profile_pattern'
 
-
-name = 'all_event'
-all_event = LoadData.init_data(EventFilesSerialiser, dir_save, name)
+name_event = 'all_event'
+all_event = LoadData.init_data(EventFilesSerialiser, dir_save, name_event)
 
 reward = EventRewardNeuralynx()
 
@@ -70,15 +87,13 @@ start_stim_index = start_stim_index.astype(dtype=int)
 # -------------------------------------------- partie reload specifique neurone ---------------------------------
 from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
 
-dir_save = r'Y:\Analyse_maxime\cplx10\save'
-name = 'segment0_neurone0'
-neurone = LoadData.init_data(NeuroneFilesSerialiser, dir_save, name)
+name_seg = 'segment0_neurone0'
+neurone = LoadData.init_data(NeuroneFilesSerialiser, dir_save, name_seg)
 
 
 # ------------------------------------- parti reload specification segment ----------------------------------
 from py_NPClab_Package.utilitaire_load.basic_load import SegmentBTFilesSerialiser
 
-dir_save = r'Y:\Analyse_maxime\cplx10\save'
 name = 'segment_infos'
 num_segment = 0
 base_time_segment = LoadData.init_data(SegmentBTFilesSerialiser, dir_save, name, num_segment)
@@ -112,23 +127,23 @@ plot = GenericPlotV2()
 reward_spike_time = pd.Series(base_time_segment.data[start_stim_index])
 reward_plot_data = plot.plot_raster_event_spike(spike_time=np.array(neurone.data['time']),
                                                 time_event=reward_spike_time,
-                                                name='reward')
-plot.plot_kernel_density(reward_plot_data, 'reward')
-# -------------------------------------------- partie plot spike ----------------------------------------------
-from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
+                                                name='reward0')
+plot.plot_kernel_density(reward_plot_data, 'reward0')
 
-# dir_save = r'Y:\python\import_neuralynxv2\data\cplx07 + bsl\save'
-# name = 'segment1_neurone0'
-# neurone0 = LoadData.init_data(NeuroneFilesSerialiser, dir_save, name)
+omission_plot_data = plot.plot_raster_event_spike(spike_time=np.array(neurone.data['time']),
+                                                time_event=omission_spike_time,
+                                                name='omission0')
+plot.plot_kernel_density(omission_plot_data, 'omission0')
 
-# plot.plot_frequence_glissante(neurones=[np.array(neurone_spike_bool['time'].dropna())],
-#                               name_neurone=['neurone'],
-#                               taille_fenetre=15, pas_de_gliss=5, name='neuron')
-# plot.plot_burst_glissant(neurones_times=[neurone_spike_bool['time'].dropna()], neurones_isi=[neurone_spike_bool['isi'].dropna()],
-#                               name_neurone=['neurone'],
-#                               taille_fenetre=15, pas_de_gliss=5, name='neuron')
-#
-# plot.plotcorrelogram(neurones=[np.array(neurone_spike_bool['time'].dropna())], lag_max=0.5, lenght_of_bin=0.001, name='cross')
+
+plot.plot_frequence_glissante(neurones=[np.array(neurone.data['time'])],
+                              name_neurone=['neurone'],
+                              taille_fenetre=15, pas_de_gliss=5, name='neurone0')
+plot.plot_burst_glissant(neurones_times=[neurone.data['time']], neurones_isi=[neurone.data['isi']],
+                              name_neurone=['neurone'],
+                              taille_fenetre=15, pas_de_gliss=5, name='neurone0')
+
+plot.plotcorrelogram(neurones=[neurone.data['time']], lag_max=0.5, lenght_of_bin=0.01, name='neurone0')
 
 intervalle = [1 * 32000, 18 * 32000]  # intervalle par seconde
 
@@ -136,11 +151,11 @@ intervalle = [1 * 32000, 18 * 32000]  # intervalle par seconde
 #                          event=all_event, option_other_trigger=omission_recallage.event_index_in_raw,
 #                          name='raw plot', option_csc=['CSC2','CSC6','CSC7','CSC10'])
 
-plot.plot_neurone_in_raw(intervalle=intervalle, neurones_index_val=[neurone_spike_bool['time_index_in raw'].dropna().astype(dtype=int)],
-                         raw_signal=raw_brute.signal_segments['num segment : 0'],
-                         event=all_event['num segment : 0'], name='raw plot', option_csc=['CSC2', 'CSC6', 'CSC7', 'CSC8'])
-
-plot.plot_waveform_neurone(intervalle=intervalle, neurones_index_val=[neurone_spike_bool['time_index_in raw'].dropna().astype(dtype=int)],
-                           raw_signal=raw_brute.signal_segments['num segment : 1'],
-                         event=all_event,
-                         name='raw plot', option_csc=['CSC2','CSC6', 'CSC7', 'CSC8'])
+# plot.plot_neurone_in_raw(intervalle=intervalle, neurones_index_val=[neurone_spike_bool['time_index_in raw'].dropna().astype(dtype=int)],
+#                          raw_signal=raw_brute.signal_segments['num segment : 0'],
+#                          event=all_event['num segment : 0'], name='raw plot', option_csc=['CSC2', 'CSC6', 'CSC7', 'CSC8'])
+#
+# plot.plot_waveform_neurone(intervalle=intervalle, neurones_index_val=[neurone_spike_bool['time_index_in raw'].dropna().astype(dtype=int)],
+#                            raw_signal=raw_brute.signal_segments['num segment : 1'],
+#                          event=all_event,
+#                          name='raw plot', option_csc=['CSC2','CSC6', 'CSC7', 'CSC8'])

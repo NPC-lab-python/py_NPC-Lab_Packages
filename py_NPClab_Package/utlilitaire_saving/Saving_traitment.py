@@ -116,8 +116,8 @@ class SaveSerialisation(VerifDossier):
                 return 1, dir_data[1]
             else:
                 return 0, dir_data[1]
+
         if not isinstance(other_path, type(None)) and isinstance(dir_save_conf, type(None)):
-            dir_save_conf = other_path
             if isinstance(name_folder, type(None)):
                 dir_data = self.existe_folder_saving(other_path)
             else:
