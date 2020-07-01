@@ -268,7 +268,8 @@ class GenericPlotV2(PlotSpike, SavingMethodes):
         # colors1 = 'black'
         colors2 = 'r'
         e = pd.DataFrame()
-        _tmp = pd.Series(dtype=float)
+        tmp = pd.DataFrame()
+        tmp_serie = pd.Series(dtype=float)
         for id, val in enumerate(time_event):
             e = e.append(pd.Series(
                 spike_time[((spike_time < time_event[id] + fenetre) & (spike_time > time_event[id]-0.1))], name=str(id)))
@@ -278,14 +279,15 @@ class GenericPlotV2(PlotSpike, SavingMethodes):
             for idx, val in enumerate(time_event):
                 # _spike_around_norma = (2*(e.iloc[idx][e.iloc[idx].notna()]-(time_event[idx] - fenetre))/((time_event[idx] + fenetre)-(time_event[idx] - fenetre)))-1
                 _spike_around_norma = e.iloc[idx][e.iloc[idx].notna()]-(time_event[idx])
+                tmp_serie = tmp_serie.append(_spike_around_norma)
 
-                _tmp = _tmp.append(_spike_around_norma)
+                tmp[str(idx)] = [_spike_around_norma]
                 ax.eventplot(_spike_around_norma, linelengths=linelengths2, lineoffsets=lineoffsets2+idx, colors=colors2)
                 # ax.eventplot(e.loc[2][e.loc[2].notna()],linelengths=linelengths2, lineoffsets=lineoffsets2, colors=colors2)
             ax.plot([0, 0], [0, idx],'o-')
 
         self._save_figure_(fig=fig1, name=name, option='raster')
-        return _tmp
+        return tmp_serie, tmp
 
     def plot_kernel_density(self, _tmp, name: str):
         fig1 = self._crea_fig_()
