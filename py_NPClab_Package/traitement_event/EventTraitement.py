@@ -271,7 +271,7 @@ class EventRewardNeuralynx(ClassificationPattern):
                                     time_up=profile_pattern['time_up'], time_down=profile_pattern['time_down'],
                                         pattern=profile_pattern['pattern'], name=profile_pattern['name'])
             if start_stop_synchro.size < 1:
-                logging.debug(f'Il n"y a pas de ttl de synchronisation')
+                logging.debug(f'Il n"y a pas de ttl de synchronisation (EventTraitement, ligne 274')
                 return None
             else:
                 return start_stop_synchro
@@ -284,7 +284,8 @@ class EventRewardNeuralynx(ClassificationPattern):
     def _stim_(self, reward_time: Series, profile_pattern: Dict = None) -> Series:
         """
             détection des stims
-        :param reward_time:
+        :param reward_time: correspond au temps issu des events neuralynx
+        :param profile_pattern: profile préenregistré correspondant à une stim
         :return:
         """
         if isinstance(profile_pattern, type(None)):
@@ -337,6 +338,8 @@ class EventRewardNeuralynx(ClassificationPattern):
             m = (reward_time_from_txt / 1000) + lag
             self.reward_time_ref_rmz = lag
         else:
+            logging.debug(f'Il n"y a pas de ttl de synchronisation (EventTraitement, ligne 274')
+
             self.reward_time_ref_rmz = reward_time[self.start_stop_synchro[0][0]]
 
         rmz: Series = reward_time - self.reward_time_ref_rmz

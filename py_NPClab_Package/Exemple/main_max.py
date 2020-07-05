@@ -16,16 +16,16 @@ dir_profile_pattern: str = r'Y:\Analyse_maxime\profile_pattern'
 # dir_spikefile: str = r'Y:\Analyse_maxime\cplx25\clustering\*.txt'
 # dir_txt_traj: str = r'Y:\Analyse_maxime\cplx25\fichier_traj\*.txt'
 
-num_segment = 0
-name_neurone: str = 'segment0_neurone0'
+num_segment = 1
+name_neurone: str = 'segment1_neurone0'
 
-dir_global = r'Y:\Analyse_maxime\global_raster'
+dir_global = r'Y:\Analyse_maxime'
 
 # ----- det
-dir_save: str = r'Y:\Analyse_maxime\Det\Ray14\equequ1\save'
-dir_data: str = r'Y:\Analyse_maxime\Det\Ray14\equequ1'
-dir_spikefile: str = r'Y:\Analyse_maxime\Det\Ray14\equequ1\clustering\*.txt'
-dir_txt_traj: str = r'Y:\\Analyse_maxime\\Det\\Ray14\\equequ1\\fichier_traj\\*.txt'
+dir_save: str = r'Y:\Analyse_maxime\cplx07 + bsl\save'
+dir_data: str = r'Y:\Analyse_maxime\cplx07 + bsl'
+dir_spikefile: str = r'Y:\Analyse_maxime\cplx07 + bsl\clustering\*.txt'
+dir_txt_traj: str = r'Y:\Analyse_maxime\cplx07 + bsl\fichier_traj\*.txt'
 
 # ------------------------------------initialisation et creation du set de données ---------------------------
 
@@ -88,9 +88,8 @@ profile_pattern_synchro = reward.get_profile(dir_pattern=dir_profile_pattern, na
 profile_pattern_stim = reward.get_profile(dir_pattern=dir_profile_pattern, name_pattern='stimulation_classic')
 
 
-
-start_stim, start_stim_index = reward.set_reward(reward_time=all_event.data['num segment : 0']['time'],
-                                                 reward_index=all_event.data['num segment : 0']['index'],
+start_stim, start_stim_index = reward.set_reward(reward_time=all_event.data[f'num segment : {num_segment}']['time'],
+                                                 reward_index=all_event.data[f'num segment : {num_segment}']['index'],
                                                  profile_pattern_synchro=profile_pattern_synchro,
                                                  profile_pattern_stim=profile_pattern_stim)
 start_stim_index = start_stim_index.astype(dtype=int)
