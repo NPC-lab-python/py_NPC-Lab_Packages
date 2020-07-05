@@ -247,13 +247,11 @@ class GenericPlotV2(PlotSpike, SavingMethodes):
 
         self._save_figure_(fig=fig1, name=name, option='allspike')
 
-    def plot_raster_event_spike(self, spike_time: ndarray, time_event: Series, name: str):
+    def plot_raster_event_spike(self, raster_spike_time: DataFrame, name: str, fenetre: float = 2):
         """
         normalisation entre -1 et 1 ! faire attention car si la fenetre est dif de 1 la base temporelle restara entre -1 et 1
         (2*(e.loc[3][e.loc[3].notna()]-(time_event[3] - fenetre))/((time_event[3] + fenetre)-(time_event[3] - fenetre)))-1
         """
-
-        fenetre = 2
 
         fig1 = self._crea_fig_()
 
@@ -267,39 +265,100 @@ class GenericPlotV2(PlotSpike, SavingMethodes):
 
         # colors1 = 'black'
         colors2 = 'r'
-        e = pd.DataFrame()
-        tmp = pd.DataFrame()
+        time_spike_try = pd.DataFrame()
+        tmp = pd.Series([], dtype=int)
         tmp_serie = pd.Series(dtype=float)
-        for id, val in enumerate(time_event):
-            e = e.append(pd.Series(
-                spike_time[((spike_time < time_event[id] + fenetre) & (spike_time > time_event[id]-0.1))], name=str(id)))
 
         val: str
         for ind_subplot, ax in enumerate(axis_list):
-            for idx, val in enumerate(time_event):
-                # _spike_around_norma = (2*(e.iloc[idx][e.iloc[idx].notna()]-(time_event[idx] - fenetre))/((time_event[idx] + fenetre)-(time_event[idx] - fenetre)))-1
-                _spike_around_norma = e.iloc[idx][e.iloc[idx].notna()]-(time_event[idx])
+            for idx in range(len(raster_spike_time.index)):
+                _spike_around_norma = raster_spike_time.iloc[idx][raster_spike_time.iloc[idx].notna()]
                 tmp_serie = tmp_serie.append(_spike_around_norma)
 
-                tmp[str(idx)] = [_spike_around_norma]
+                tmp = tmp.append(pd.Series(len(_spike_around_norma)))
                 ax.eventplot(_spike_around_norma, linelengths=linelengths2, lineoffsets=lineoffsets2+idx, colors=colors2)
                 # ax.eventplot(e.loc[2][e.loc[2].notna()],linelengths=linelengths2, lineoffsets=lineoffsets2, colors=colors2)
-            ax.plot([0, 0], [0, idx],'o-')
+            ax.plot([0, 0], [0, len(raster_spike_time.index)], 'o-')
 
         self._save_figure_(fig=fig1, name=name, option='raster')
         return tmp_serie, tmp
 
-    def plot_kernel_density(self, _tmp, name: str):
+    def plot_raster_event_spike_global(self, raster_spike_time: DataFrame, name: str):
+        """
+        normalisation entre -1 et 1 ! faire attention car si la fenetre est dif de 1 la base temporelle restara entre -1 et 1
+        (2*(e.loc[3][e.loc[3].notna()]-(time_event[3] - fenetre))/((time_event[3] + fenetre)-(time_event[3] - fenetre)))-1
+
+        :param raster_spike_time: on rentre un dataframe
+        """
         fig1 = self._crea_fig_()
 
-        Vecvalues = _tmp[:, None]
-        Vecpoints = np.linspace(-0.1, 2, 100)[:, None]
-        kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(Vecvalues)
-        logkde = kde.score_samples(Vecpoints)
-        plt.plot(Vecpoints, np.exp(logkde))
-        # fig1.show()
+        axis_list = []
+        axis_list.append(fig1.add_subplot(1, 1, 1))
 
-        self._save_figure_(fig=fig1, name=name, option='kdensity')
+        lineoffsets2 = 1
+        linelengths2 = 1
+
+        colors2 = 'r'
+        val: str
+        for ind_subplot, ax in enumerate(axis_list):
+            for idx in range(len(raster_spike_time.index)):
+                _spike_around_norma = raster_spike_time.iloc[idx][raster_spike_time.iloc[idx].notna()]
+                ax.eventplot(_spike_around_norma, linelengths=linelengths2, lineoffsets=lineoffsets2+idx, colors=colors2)
+            ax.plot([0, 0], [0, len(raster_spike_time.index)], 'o-')
+            ax.set_xlabel(name)
+
+        self._save_figure_(fig=fig1, name=name, option='raster')
+
+    def plot_kernel_denty_global(self, name: str, around_event: DataFrame, x):
+        """
+        les données doivent être préparées
+
+        :param name:
+        :param x:
+        :param around_event:
+        :return:
+        """
+
+        fig1 = self._crea_fig_()
+        x = [i[0] for i in x]
+        event_mean = np.array(around_event.mean(axis=0))
+        event_std = np.array(around_event.std(axis=0))
+        axis_list = []
+        axis_list.append(fig1.add_subplot(1, 1, 1))
+        colors = ['g', 'b', 'r', 'g', 'b', 'r', 'g', 'b', 'r']
+        for idx, ax in enumerate(axis_list):
+            y = event_mean
+            std = event_std
+            ax.plot(x, y, 'b', linewidth=(self._thickness * 2))
+            ax.fill_between(x, y - std/np.sqrt(len(around_event)), y + std/np.sqrt(len(around_event)), facecolor='b', alpha=0.2)
+            # ax.errorbar(x, y, std/np.sqrt(len(around_event)), linestyle='-', marker='^')
+            ax.plot([0, 0], [0, 1], colors[idx] + 'o-')
+            ax.set(ylim=(0, 1))
+            ax.set_xlabel(name)
+        fig1.show()
+        self._save_figure_(fig=fig1, name=name, option='ksdensityglobal')
+
+
+
+    def plot_kernel_density(self, _tmp, name: str, fenetre_after: float = 2, fenetre_before : float = 2):
+        if len(_tmp) <=1:
+            Vecvalues = np.array([], dtype=float)
+            logkde = np.array([], dtype=float)
+            return Vecvalues, logkde
+        else:
+            fig1 = self._crea_fig_()
+
+            Vecvalues = _tmp[:, None]
+            Vecpoints = np.linspace(-fenetre_before-0.2, fenetre_after+0.2, 100)[:, None]
+            kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(Vecvalues)
+            logkde = kde.score_samples(Vecpoints)
+            plt.plot(Vecpoints, np.exp(logkde))
+            plt.ylim(0,1)
+            plt.title(name)
+            # fig1.show()
+
+            self._save_figure_(fig=fig1, name=name, option='kdensity')
+            return Vecpoints, np.exp(logkde)
 
     def plot_frequence_glissante(self, neurones: List[ndarray], taille_fenetre: int, pas_de_gliss: int, name_neurone: List[str], name: str):
         """

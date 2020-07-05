@@ -226,7 +226,7 @@ class SpecifiquePlot(object):
 
 if __name__ == '__main__':
     from py_NPClab_Package.utilitaire_load import LabviewFilesReward, LabviewFilesTrajectory, LoadData
-    from traitement_labview.Labview_traitment import AnalyseFromLabview
+    from py_NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabview
 
     # ------------------------------------- parti import data labview ---------------------------------------------------
 

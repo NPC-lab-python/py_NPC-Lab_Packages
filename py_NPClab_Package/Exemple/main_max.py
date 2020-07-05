@@ -9,11 +9,23 @@ from py_NPClab_Package.Exemple.CreationSegment import SegmentInit
 from py_NPClab_Package.Exemple.CreationEvent import EventInit
 from py_NPClab_Package.Exemple.TraitementNeurone import NeuroneInit
 
-
-dir_save: str = r'Y:\Analyse_maxime\cplx12\save'
-dir_data: str = r'Y:\Analyse_maxime\cplx12'
 dir_profile_pattern: str = r'Y:\Analyse_maxime\profile_pattern'
-dir_spikefile: str = r'Y:\Analyse_maxime\cplx12\clustering\*.txt'
+
+# dir_save: str = r'Y:\Analyse_maxime\cplx25\save'
+# dir_data: str = r'Y:\Analyse_maxime\cplx25'
+# dir_spikefile: str = r'Y:\Analyse_maxime\cplx25\clustering\*.txt'
+# dir_txt_traj: str = r'Y:\Analyse_maxime\cplx25\fichier_traj\*.txt'
+
+num_segment = 0
+name_neurone: str = 'segment0_neurone0'
+
+dir_global = r'Y:\Analyse_maxime\global_raster'
+
+# ----- det
+dir_save: str = r'Y:\Analyse_maxime\Det\Ray14\equequ1\save'
+dir_data: str = r'Y:\Analyse_maxime\Det\Ray14\equequ1'
+dir_spikefile: str = r'Y:\Analyse_maxime\Det\Ray14\equequ1\clustering\*.txt'
+dir_txt_traj: str = r'Y:\\Analyse_maxime\\Det\\Ray14\\equequ1\\fichier_traj\\*.txt'
 
 # ------------------------------------initialisation et creation du set de données ---------------------------
 
@@ -25,12 +37,11 @@ dir_spikefile: str = r'Y:\Analyse_maxime\cplx12\clustering\*.txt'
 #
 # neurones = NeuroneInit(dir_data=dir_data, dir_save=dir_save, dir_spikefile=dir_spikefile)
 # neurones.set_neurone(neurones=['neurone0_brute'], num_segment=0)
-
-# neurones.set_neurone(neurones=['neurone0_brute', 'neurone1_brute'], num_segment=0)
+# #
+# neurones.set_neurone(neurones=['neurone0_brute', 'neurone1_brute', 'neurone2_brute', 'neurone3_brute'], num_segment=0)
 
 #------------------------------------- parti import data labview ---------------------------------------------------
 
-dir_txt_traj = r'Y:\Analyse_maxime\cplx11\fichier_traj\*.txt'
 
 # chargement de la trajectoire contient "x, y, point"
 trajectoire = LoadData.init_data(LabviewFilesTrajectory, dir_txt_traj)
@@ -68,8 +79,8 @@ from py_NPClab_Package.traitement_event.EventTraitement import EventRewardNeural
 from py_NPClab_Package.utilitaire_load.basic_load import EventFilesSerialiser, LoadData
 
 
-name_event = 'all_event'
-all_event = LoadData.init_data(EventFilesSerialiser, dir_save, name_event)
+# name_event = 'all_event'
+all_event = LoadData.init_data(EventFilesSerialiser, dir_save, 'all_event')
 
 reward = EventRewardNeuralynx()
 
@@ -88,9 +99,9 @@ start_stim_index = start_stim_index.astype(dtype=int)
 # ------------------------------------- parti reload specification segment ----------------------------------
 from py_NPClab_Package.utilitaire_load.basic_load import SegmentBTFilesSerialiser
 
-name = 'segment_infos'
-num_segment = 0
-base_time_segment = LoadData.init_data(SegmentBTFilesSerialiser, dir_save, name, num_segment)
+# name = 'segment_infos'
+# num_segment = 0
+base_time_segment = LoadData.init_data(SegmentBTFilesSerialiser, dir_save, 'segment_infos', num_segment)
 
 # -------------------------------------- parti recallage omission sur temps spike --------------------------
 from py_NPClab_Package.traitement_event.EventTraitement import EventFromOther
@@ -112,7 +123,7 @@ omission_spike_time = pd.Series(base_time_segment.data[omission_recallage.event_
 # -------------------------------------------- partie reload specifique neurone ---------------------------------
 from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
 
-name_neurone = 'segment0_neurone0'
+# name_neurone = 'segment0_neurone0'
 neurone = LoadData.init_data(NeuroneFilesSerialiser, dir_save, name_neurone)
 
 # ------------------------------------- parti preparation des données pour le plot avec spike---------
@@ -122,31 +133,39 @@ from py_NPClab_Package.utilitaire_load.basic_load import ImportNeuralynx
 raw_brute = LoadData.init_data(ImportNeuralynx, dir_data, 'csc')
 
 plot = GenericPlotV2()
-
-
+# -----------------------------------------------------------------------------------------------
 reward_spike_time = pd.Series(base_time_segment.data[start_stim_index])
-reward_plot_data, re_struct = plot.plot_raster_event_spike(spike_time=np.array(neurone.data['time']),
-                                                time_event=reward_spike_time,
-                                                name='reward '+name_neurone)
 
-plot.plot_kernel_density(reward_plot_data, 'reward '+name_neurone)
+from py_NPClab_Package.traitement_global.TraitementNeuroneGlobal import SaveRasterData, ConstructRaster
 
-omission_plot_data, omi_struct = plot.plot_raster_event_spike(spike_time=np.array(neurone.data['time']),
-                                                time_event=omission_spike_time,
-                                                name='omission '+name_neurone)
-plot.plot_kernel_density(omission_plot_data, 'omission ' +name_neurone)
+data_raster = ConstructRaster()
+all_data_reward = data_raster.set_data_raster(spike_time=np.array(neurone.data['time']), time_event=reward_spike_time)
+reward_plot_data, re_struct = plot.plot_raster_event_spike(raster_spike_time=all_data_reward, name=f'{dir_data}\\reward_{name_neurone}')
+
+c = data_raster.normalisation_raster(re_struct=re_struct, length_neurone=len(neurone.data['time']), data=reward_plot_data)
+vecpoint_reward, logkde_reward = plot.plot_kernel_density(c, f'{dir_data}\\reward_{name_neurone}')
 
 
-dir_global = r'Y:\Analyse_maxime\global_raster'
-from py_NPClab_Package.traitement_global.TraitementNeuroneGlobal import SaveRasterData
-data_raster = {}
+# ---------------------------------
+all_data_omission = data_raster.set_data_raster(spike_time=np.array(neurone.data['time']), time_event=omission_spike_time)
 
-data_raster['reward_'+dir_data.split('\\')[-1]] = [reward_plot_data,re_struct]
-data_raster['omission_'+dir_data.split('\\')[-1]] = [omission_plot_data, omi_struct]
+omission_plot_data, omi_struct = plot.plot_raster_event_spike(raster_spike_time=all_data_omission,
+                                                                                   name=f'{dir_data}\\omission_{name_neurone}')
+d = data_raster.normalisation_raster(re_struct=omi_struct, length_neurone=len(neurone.data['time']), data=omission_plot_data)
+
+vecpoint_omission, logkde_omission = plot.plot_kernel_density(d, f'{dir_data}\\omission_{name_neurone}')
+# -----------------------------------------------
+
+data_save_raster = {}
+
+data_save_raster['reward_'+dir_data.split('\\')[-1]] = [reward_plot_data, all_data_reward, vecpoint_reward, logkde_reward]
+data_save_raster['omission_'+dir_data.split('\\')[-1]] = [omission_plot_data, all_data_omission, vecpoint_omission, logkde_omission]
 
 save_data = SaveRasterData()
-save_data.save_raster(name_data=name_neurone+dir_data.split('\\')[-1], dir_save=dir_global, data=data_raster)
+save_data.save_raster(name_data=name_neurone+dir_data.split('\\')[-1], dir_save=dir_global, data=data_save_raster)
+#
 
+# -----------------------------------------
 
 plot.plot_frequence_glissante(neurones=[np.array(neurone.data['time'])],
                               name_neurone=['neurone'],
@@ -156,8 +175,8 @@ plot.plot_burst_glissant(neurones_times=[neurone.data['time']], neurones_isi=[ne
                               taille_fenetre=15, pas_de_gliss=5, name=name_neurone)
 
 plot.plotcorrelogram(neurones=[neurone.data['time']], lag_max=0.5, lenght_of_bin=0.01, name=name_neurone)
-
-intervalle = [1 * 32000, 18 * 32000]  # intervalle par seconde
+#
+# intervalle = [1 * 32000, 18 * 32000]  # intervalle par seconde
 
 # plot.plot_neurone_in_raw(intervalle=intervalle_omission, neurones_index_val=[neurone_spike_omission_bool['time_index_in raw'].dropna().astype(dtype=int)], raw_signal=raw_brute.signal_segments['num segment : 1'],
 #                          event=all_event, option_other_trigger=omission_recallage.event_index_in_raw,

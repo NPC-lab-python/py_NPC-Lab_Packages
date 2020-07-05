@@ -62,7 +62,7 @@ class SaveSerialisation(VerifDossier):
         Cette méthode permet de charger directement le fichier voulu
         quand on est sure qu'il existe
         :param path: chemin comprend le dossier "save"
-        :param name: nom du fichier sans l'extension
+        :param name: nom du fichier sans "l'extension"
         :return:
         """
         data = self._chargement_fichier_data_(path, name)

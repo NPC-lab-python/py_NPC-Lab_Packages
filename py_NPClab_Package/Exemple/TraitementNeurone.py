@@ -1,12 +1,14 @@
 from py_NPClab_Package.utilitaire_load.basic_load import LoadData, NeuralynxFilesSpike, SegmentFilesSerialiser, EventFilesSerialiser
 from py_NPClab_Package.traitement_spike.NeuroneTraitment import Spike, PreFormatSpike
 import sys
+
+
 class NeuroneInit(object):
+
     def __init__(self, dir_save: str, dir_data: str, dir_spikefile: str):
         self.dir_save = dir_save
         self.dir_data = dir_data
         self.dir_spikefile = dir_spikefile
-
 
     def set_neurone(self, neurones: list, num_segment: int):
         name_event = 'all_event'
@@ -41,6 +43,7 @@ class NeuroneInit(object):
 
 
 if __name__ == '__main__':
+
     dir_save: str = r'Y:\Analyse_maxime\cplx10\save'
     dir_data: str = r'Y:\Analyse_maxime\cplx10'
     dir_spikefile: str = r'Y:\Analyse_maxime\cplx10\clustering\*.txt'

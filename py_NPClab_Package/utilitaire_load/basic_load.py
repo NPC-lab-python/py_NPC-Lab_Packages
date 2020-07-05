@@ -116,7 +116,7 @@ class LabviewFilesTrajectory(object):
         try:
             assert len(path_traj) > 0
         except AssertionError as e:
-            logging.debug(f"Chemin du fichier traj erroné")
+            logging.debug(f"Chemin du fichier traj erroné (Basic_Load : ligne119)")
             sys.exit()
 
         return path_traj

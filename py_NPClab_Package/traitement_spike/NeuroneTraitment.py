@@ -259,6 +259,7 @@ class Spike(SaveSerialisation, ExtractEvent):
         self.all_info_swb = all_info_swb
         # TODO extraire correctement les variables spike_swb
 
+
 class CleaningSpikeTime(SaveSerialisation):
 
     def __init__(self, dir_data: str, name_neurone: str, start_stim: Series, time_ref_synchro: float):
@@ -315,6 +316,7 @@ class CleaningSpikeTime(SaveSerialisation):
         ee['time'] = neurone['time'][~ee['time_cleaned_index']]
         ee['isi'] = ee['time'].dropna().diff()
         return ee
+
 
 if __name__ == "__main__":
     t1 = chrono.time()
