@@ -1,0 +1,17 @@
+Metadata-Version: 1.1
+Name: py-NPClab-Package
+Version: 0.0.1
+Summary: Analysis data from comportment and electrophysiology
+Home-page: https://github.com/NPC-lab-python/py_NPC-Lab_Packages
+Author: Steve Didienne
+Author-email: UNKNOWN
+License: Free
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Development Status :: 1 - Planning
+Classifier: License :: OSI Approved
+Classifier: Natural Language :: French
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Topic :: Communications
