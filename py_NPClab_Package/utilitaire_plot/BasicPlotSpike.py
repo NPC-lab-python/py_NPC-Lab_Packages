@@ -260,10 +260,11 @@ class GenericPlotV2(PlotSpike, SavingMethodes):
 
         # lineoffsets1 = np.array([1])
         # linelengths1 = [1.5]
+        # colors1 = 'black'
+
         lineoffsets2 = 1
         linelengths2 = 1
 
-        # colors1 = 'black'
         colors2 = 'r'
         time_spike_try = pd.DataFrame()
         tmp = pd.Series([], dtype=int)
@@ -309,7 +310,7 @@ class GenericPlotV2(PlotSpike, SavingMethodes):
 
         self._save_figure_(fig=fig1, name=name, option='raster')
 
-    def plot_kernel_denty_global(self, name: str, around_event: DataFrame, x):
+    def plot_kernel_denty_global(self, name: str, around_event: DataFrame, x, save: bool = False):
         """
         les données doivent être préparées
 
@@ -333,32 +334,26 @@ class GenericPlotV2(PlotSpike, SavingMethodes):
             ax.fill_between(x, y - std/np.sqrt(len(around_event)), y + std/np.sqrt(len(around_event)), facecolor='b', alpha=0.2)
             # ax.errorbar(x, y, std/np.sqrt(len(around_event)), linestyle='-', marker='^')
             ax.plot([0, 0], [0, 1], colors[idx] + 'o-')
-            ax.set(ylim=(0, 1))
+            ax.set(ylim=(0, 3))
             ax.set_xlabel(name)
-        fig1.show()
-        self._save_figure_(fig=fig1, name=name, option='ksdensityglobal')
+        self._save_figure_(fig=fig1, name=name, option='ksdensityglobal', save=save)
 
 
 
-    def plot_kernel_density(self, _tmp, name: str, fenetre_after: float = 2, fenetre_before : float = 2):
-        if len(_tmp) <=1:
-            Vecvalues = np.array([], dtype=float)
-            logkde = np.array([], dtype=float)
-            return Vecvalues, logkde
+    def plot_kernel_density(self, Vecpoints: ndarray, name: str, ksdensity_normaliser: ndarray,
+                            save: bool = False, fenetre_after: float = 2, fenetre_before : float = 2):
+        """
+        _tmp correspond au temps des spikes
+        """
+
+        if len(ksdensity_normaliser) <=1:
+            pass
         else:
             fig1 = self._crea_fig_()
-
-            Vecvalues = _tmp[:, None]
-            Vecpoints = np.linspace(-fenetre_before-0.2, fenetre_after+0.2, 100)[:, None]
-            kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(Vecvalues)
-            logkde = kde.score_samples(Vecpoints)
-            plt.plot(Vecpoints, np.exp(logkde))
-            plt.ylim(0,1)
+            plt.plot(Vecpoints, ksdensity_normaliser)
+            plt.ylim(0, 3)
             plt.title(name)
-            # fig1.show()
-
-            self._save_figure_(fig=fig1, name=name, option='kdensity')
-            return Vecpoints, np.exp(logkde)
+            self._save_figure_(fig=fig1, name=name, option='kdensity', save=save)
 
     def plot_frequence_glissante(self, neurones: List[ndarray], taille_fenetre: int, pas_de_gliss: int, name_neurone: List[str], name: str):
         """

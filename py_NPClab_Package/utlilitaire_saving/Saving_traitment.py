@@ -140,13 +140,16 @@ class SavingMethodes(object):
         final_path = path + name + extention
         np.savetxt(fname=final_path, X=data, fmt='%1.4e')
 
-    def _save_figure_(self, fig: plt, name: str, option: str = None):
-        ext = '.eps'
+    def _save_figure_(self, fig: plt, name: str, save: bool = True, ext: str = '.eps', option: str = None):
         if type(option) is str:
             names: str = name + option + ext
         else:
             names = name + ext
-        fig.savefig(names, format='eps')
+
+        if not save:
+            pass
+        else:
+            fig.savefig(names, format='eps')
         fig.show()
 
     @mesure
