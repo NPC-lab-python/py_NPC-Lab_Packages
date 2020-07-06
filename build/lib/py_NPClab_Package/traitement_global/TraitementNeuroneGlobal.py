@@ -21,6 +21,7 @@ from os.path import join
 import re
 from typing import List, Dict
 import pathlib
+from sklearn.neighbors import KernelDensity
 
 
 class ConstructRaster(SaveSerialisation):
@@ -44,13 +45,50 @@ class ConstructRaster(SaveSerialisation):
                 spike_time[((spike_time < time_event[id] + windows) & (spike_time > time_event[id]-before_trig))], name=str(id)) - time_event[id])
         return time_spike_try
 
-    def normalisation_raster(self,re_struct: Series, length_neurone: int, data: Series):
+    def normalisation_raster(self,re_struct: Series, length_neurone: int, data: Series, dur_session: float):
+        """
+        data correspond au temps de spike
+        """
         if len(data) <1:
             data = pd.Series([1])
             re_struct = pd.Series([1])
-            return data - ((re_struct.sum() / len(re_struct)) / length_neurone)
+            return data / ((re_struct.sum() / len(re_struct)) / (length_neurone/dur_session))
         else:
-            return data - ((re_struct.sum() / len(re_struct)) / length_neurone)
+            return data / ((re_struct.sum() / len(re_struct)) / (length_neurone/dur_session))
+
+    def ksdensity_normaliser(self, time_spike_in_windows, re_struct: Series, length_neurone: int, dur_session: float,
+                  fenetre_before: float = 2, fenetre_after: float = 2):
+        """
+
+        :param time_spike_in_windows: les temps des spikes
+        :param re_struct: correspond au nombre de spike par essaie
+        :param length_neurone: nombre de spike
+        :param dur_session: durée de la session en seconde
+        :param fenetre_before: les temps des events
+        :param fenetre_after: les temps des events
+
+        """
+
+        if len(time_spike_in_windows) <= 1:
+            Vecvalues = np.array([], dtype=float)
+            logkde = np.array([], dtype=float)
+            return Vecvalues, logkde
+        else:
+
+            Vecvalues = time_spike_in_windows[:, None]
+            Vecpoints = np.linspace(-fenetre_before - 0.2, fenetre_after + 0.2, 100)[:, None]
+            kde = KernelDensity(kernel='gaussian', bandwidth=0.1).fit(Vecvalues)
+            logkde = kde.score_samples(Vecpoints)
+
+            nb_total_spike_in_session = re_struct.sum()
+            nb_try = len(re_struct)
+            freq_mean_windows = nb_total_spike_in_session / nb_try
+
+            mean_freq = length_neurone/dur_session
+            mean_all = freq_mean_windows / mean_freq
+
+            ksdensity_data = np.exp(logkde) * mean_all
+            return Vecpoints, ksdensity_data
 
 
     def global_load(self, path: str):
@@ -188,8 +226,8 @@ class GlobalTraitement(object):
                                                      name_pattern='synchro_video_classic')
         profile_pattern_stim = reward.get_profile(dir_pattern=dir_profile_pattern, name_pattern='stimulation_classic')
 
-        start_stim, start_stim_index = reward.set_reward(reward_time=all_event.data['num segment : 0']['time'],
-                                                         reward_index=all_event.data['num segment : 0']['index'],
+        start_stim, start_stim_index = reward.set_reward(reward_time=all_event.data[f'num segment : {num_segment}']['time'],
+                                                         reward_index=all_event.data[f'num segment : {num_segment}']['index'],
                                                          profile_pattern_synchro=profile_pattern_synchro,
                                                          profile_pattern_stim=profile_pattern_stim)
         start_stim_index = start_stim_index.astype(dtype=int)
@@ -237,9 +275,13 @@ class GlobalTraitement(object):
         reward_plot_data, re_struct = plot.plot_raster_event_spike(raster_spike_time=all_data_reward,
                                                                    name=f'{dir_data}\\reward_{name_neurone}')
 
-        c = data_raster.normalisation_raster(re_struct=re_struct, length_neurone=len(neurone.data['time']),
-                                             data=reward_plot_data)
-        vecpoint_reward, logkde_reward = plot.plot_kernel_density(c, f'{dir_data}\\reward_{name_neurone}')
+        dur_session = all_event.data[f'num segment : {num_segment}']['time'].iloc[-1]-reward.reward_time_ref_rmz
+
+        vecpoint_reward, kde_reward = data_raster.ksdensity_normaliser(time_spike_in_windows=reward_plot_data, re_struct=re_struct,
+                                             length_neurone=len(neurone.data['time']),
+                                             dur_session=dur_session)
+        plot.plot_kernel_density(Vecpoints=vecpoint_reward, ksdensity_normaliser=kde_reward,
+                                 name=f'{dir_data}\\reward_{name_neurone}')
 
         # ---------------------------------
         all_data_omission = data_raster.set_data_raster(spike_time=np.array(neurone.data['time']),
@@ -247,32 +289,34 @@ class GlobalTraitement(object):
 
         omission_plot_data, omi_struct = plot.plot_raster_event_spike(raster_spike_time=all_data_omission,
                                                                       name=f'{dir_data}\\omission_{name_neurone}')
-        d = data_raster.normalisation_raster(re_struct=omi_struct, length_neurone=len(neurone.data['time']),
-                                             data=omission_plot_data)
+        vecpoint_omission, kde_omission = data_raster.ksdensity_normaliser(time_spike_in_windows=omission_plot_data, re_struct=omi_struct,
+                                             length_neurone=len(neurone.data['time']),
+                                             dur_session=dur_session)
 
-        vecpoint_omission, logkde_omission = plot.plot_kernel_density(d, f'{dir_data}\\omission_{name_neurone}')
+        plot.plot_kernel_density(Vecpoints=vecpoint_omission, ksdensity_normaliser=kde_omission,
+                                 name=f'{dir_data}\\omission_{name_neurone}')
         # -----------------------------------------------
 
         data_save_raster = {}
 
         data_save_raster['reward_' + dir_data.split('\\')[-1]] = [reward_plot_data, all_data_reward, vecpoint_reward,
-                                                                  logkde_reward]
+                                                                  kde_reward]
         data_save_raster['omission_' + dir_data.split('\\')[-1]] = [omission_plot_data, all_data_omission,
-                                                                    vecpoint_omission, logkde_omission]
+                                                                    vecpoint_omission, kde_omission]
 
         save_data = SaveRasterData()
         save_data.save_raster(name_data=name_neurone + dir_data.split('\\')[-1], dir_save=dir_global,
                               data=data_save_raster)
 
-        plot.plot_frequence_glissante(neurones=[np.array(neurone.data['time'])],
-                                      name_neurone=['neurone'],
-                                      taille_fenetre=15, pas_de_gliss=5, name=f'{dir_data}\\freq_gli_{name_neurone}')
-
-        plot.plot_burst_glissant(neurones_times=[neurone.data['time']], neurones_isi=[neurone.data['isi']],
-                                 name_neurone=['neurone'],
-                                 taille_fenetre=15, pas_de_gliss=5, name=f'{dir_data}\\burst_gli_{name_neurone}')
-
-        plot.plotcorrelogram(neurones=[neurone.data['time']], lag_max=0.5, lenght_of_bin=0.01, name=f'{dir_data}\\correlogra_{name_neurone}')
+        # plot.plot_frequence_glissante(neurones=[np.array(neurone.data['time'])],
+        #                               name_neurone=['neurone'],
+        #                               taille_fenetre=15, pas_de_gliss=5, name=f'{dir_data}\\freq_gli_{name_neurone}')
+        #
+        # plot.plot_burst_glissant(neurones_times=[neurone.data['time']], neurones_isi=[neurone.data['isi']],
+        #                          name_neurone=['neurone'],
+        #                          taille_fenetre=15, pas_de_gliss=5, name=f'{dir_data}\\burst_gli_{name_neurone}')
+        #
+        # plot.plotcorrelogram(neurones=[neurone.data['time']], lag_max=0.5, lenght_of_bin=0.01, name=f'{dir_data}\\correlogra_{name_neurone}')
 
 
 if __name__ == '__main__':
