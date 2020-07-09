@@ -45,16 +45,6 @@ class ConstructRaster(SaveSerialisation):
                 spike_time[((spike_time < time_event[id] + windows) & (spike_time > time_event[id]-before_trig))], name=str(id)) - time_event[id])
         return time_spike_try
 
-    def normalisation_raster(self,re_struct: Series, length_neurone: int, data: Series, dur_session: float):
-        """
-        data correspond au temps de spike
-        """
-        if len(data) <1:
-            data = pd.Series([1])
-            re_struct = pd.Series([1])
-            return data / ((re_struct.sum() / len(re_struct)) / (length_neurone/dur_session))
-        else:
-            return data / ((re_struct.sum() / len(re_struct)) / (length_neurone/dur_session))
 
     def ksdensity_normaliser(self, time_spike_in_windows, re_struct: Series, length_neurone: int, dur_session: float,
                   fenetre_before: float = 2, fenetre_after: float = 2):
