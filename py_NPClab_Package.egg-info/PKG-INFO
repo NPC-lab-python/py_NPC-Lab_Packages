@@ -14,4 +14,4 @@ Classifier: License :: OSI Approved
 Classifier: Natural Language :: French
 Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python :: 3.8
-Classifier: Topic :: Communications
+Classifier: Topic :: Data Analysis
