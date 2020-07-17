@@ -79,7 +79,7 @@ class ClassificationPattern(SaveSerialisation):
             if isinstance(time_up, type(None)) and \
                 isinstance(time_down, type(None)) and isinstance(pattern, type(None)):
                 profile_pattern = self.load_data_serializer(path=dir_profile_pattern, name=name)
-                logging.debug(f'Fichier chargé : {name}')
+                logging.debug(f'Fichier de configuration du pattern {name} chargé')
                 return profile_pattern
 
             else:
@@ -324,6 +324,8 @@ class EventRewardNeuralynx(ClassificationPattern):
         self.start_stim_index = pd.Series([reward_index[self.start_stop_stim[i][0]] for i in range(len(self.start_stop_stim))])
         # print('eee')
         if isinstance(self.start_stop_synchro, type(None)) and not isinstance(reward_time_from_txt, type(None)):
+            logging.debug(f'Il n"y a pas de ttl de synchronisation (EventTraitement, ligne 274)'
+                          f' recallage de la synchro vidéo par le premier ttl de stim')
 
             b = np.around(self.start_stim.diff(), decimals=1)
             a = np.around(reward_time_from_txt.diff() / 1000, decimals=1)
@@ -338,7 +340,7 @@ class EventRewardNeuralynx(ClassificationPattern):
             m = (reward_time_from_txt / 1000) + lag
             self.reward_time_ref_rmz = lag
         else:
-            logging.debug(f'Il n"y a pas de ttl de synchronisation (EventTraitement, ligne 274')
+            logging.debug(f'Synchronisation Vidéo ok')
 
             self.reward_time_ref_rmz = reward_time[self.start_stop_synchro[0][0]]
 

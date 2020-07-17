@@ -1,6 +1,7 @@
 from py_NPClab_Package.utilitaire_load.basic_load import LoadData, NeuralynxFilesSpike, SegmentFilesSerialiser, EventFilesSerialiser
 from py_NPClab_Package.traitement_spike.NeuroneTraitment import Spike, PreFormatSpike
 import sys
+from typing import List, Dict
 
 
 class NeuroneInit(object):
@@ -10,7 +11,11 @@ class NeuroneInit(object):
         self.dir_data = dir_data
         self.dir_spikefile = dir_spikefile
 
-    def set_neurone(self, neurones: list, num_segment: int):
+    def set_neurone(self, neurones: List[str]):
+        """
+        Cette méthode permet la création du fichier intermédiaire du neurone dans le segment voulu.
+
+        """
         name_event = 'all_event'
         all_event = LoadData.init_data(EventFilesSerialiser, self.dir_save, name_event)
 
@@ -34,12 +39,20 @@ class NeuroneInit(object):
             - le num_segment correspondant à l'experimentation
         """
 
-        e = PreFormatSpike(dir_data=self.dir_data, spike_files=spikefiles, segment_infos=segment_data.data, all_event=all_event.data)
-        e.set_spike()
-        for i in range(len(neurones)):
-            spike = Spike(dir_data=self.dir_data, name_neurone=neurones[i], segment_infos=segment_data.data, num_segment=num_segment)
-            spike.set_neurone()
-        del spike, segment_data, e
+        preparation_spike = PreFormatSpike(dir_data=self.dir_data, spike_files=spikefiles,
+                                           segment_infos=segment_data.data,
+                                           all_event=all_event.data)
+        preparation_spike.set_spike()
+
+        """
+        
+        """
+        for i in neurones:
+            for idx in list(segment_data.data.keys()):
+                spike = Spike(dir_data=self.dir_data, name_neurone=i, segment_infos=segment_data.data, num_segment=idx[-1])
+                spike.set_neurone()
+                del spike
+        del segment_data, preparation_spike
 
 
 if __name__ == '__main__':

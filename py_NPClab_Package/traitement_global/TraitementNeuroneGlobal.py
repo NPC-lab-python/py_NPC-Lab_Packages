@@ -1,5 +1,4 @@
 from py_NPClab_Package.utlilitaire_saving.Saving_traitment import SaveSerialisation
-import numpy as np
 from py_NPClab_Package.utilitaire_load.basic_load import LabviewFilesReward, LabviewFilesTrajectory
 from py_NPClab_Package.utilitaire_traitement.TrajectoryTraitement import BasicTraitmentTrajectory
 from py_NPClab_Package.traitement_labview.Labview_traitment import AnalyseFromLabview
@@ -11,6 +10,8 @@ from py_NPClab_Package.traitement_event.EventTraitement import EventFromOther
 from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
 from py_NPClab_Package.utilitaire_plot.BasicPlotSpike import GenericPlotV2
 from py_NPClab_Package.utilitaire_load.basic_load import ImportNeuralynx
+
+import numpy as np
 
 from pandas import DataFrame, Series
 import pandas as pd
@@ -117,24 +118,38 @@ class ConstructRaster(SaveSerialisation):
 
 
 class SearchFiles(object):
+    """
 
+    """
     def search(self, path: str, save_folde: str = 'save', file_type: str = '.dat', num_segment: int = 0, word_init: str = 'segment'):
+
         pattern_name = f'{word_init}{num_segment}_neurone'
         pattern = f'{path}\**\{save_folde}\*{file_type}'
         list_files: List[str] = []
-        list_files = self.search_files(list_path=glob.glob(pattern, recursive=True), pattern_name=pattern_name, list_files=list_files)
+        list_files = self._search_files_(list_path=glob.glob(pattern, recursive=True), pattern_name=pattern_name, list_files=list_files)
         return list_files
 
-    def search_files(self, list_path, pattern_name, list_files: List[str]) -> List[str]:
+    def search_labview_data(self, path: str, file_contain_word: str, search_folder: str = 'fichier_traj', file_type: str = '.txt'):
+
+        pattern_name = f'{file_contain_word}'
+        pattern = f'{path}\**\{search_folder}\*{file_type}'
+        list_files: List[str] = []
+        list_files = self._search_files_(list_path=glob.glob(pattern, recursive=True), pattern_name=pattern_name,
+                                       list_files=list_files)
+        return list_files
+
+    def _search_files_(self, list_path, pattern_name, list_files: List[str]) -> List[str]:
         if len(list_path) == 0:
             return list_files
         else:
-            resul = re.search(pattern=pattern_name, string=list_path[0])
+            # resul = re.search(pattern=pattern_name, string=list_path[0])
+
+            resul = re.search(pattern=pattern_name, string=list_path[0].split('\\')[-1])
             if isinstance(resul, type(None)):
                 pass
             else:
                 list_files.append(list_path[0])
-            return self.search_files(list_path=list_path[1:], pattern_name=pattern_name, list_files=list_files)
+            return self._search_files_(list_path=list_path[1:], pattern_name=pattern_name, list_files=list_files)
 
 
 class SaveRasterData(SaveSerialisation):
@@ -309,8 +324,14 @@ class GlobalTraitement(object):
         # plot.plotcorrelogram(neurones=[neurone.data['time']], lag_max=0.5, lenght_of_bin=0.01, name=f'{dir_data}\\correlogra_{name_neurone}')
 
 
+
+
 if __name__ == '__main__':
     files = SearchFiles()
-    list_files = files.search(r'Y:\Analyse_maxime')
+    # list_files = files.search(r'Y:\Analyse_maxime')
+    list_files_reward = files.search_labview_data(path=r'Y:\Analyse_maxime', file_contain_word='reward')
+    list_files_traj = files.search_labview_data(path=r'Y:\Analyse_maxime', file_contain_word='traj')
+    list_files_comportment = pd.DataFrame({'files_trajectory': list_files_traj, 'files_reward': list_files_reward})
+
     traitement = GlobalTraitement()
     traitement.set_list_dir_group(list_files=list_files)

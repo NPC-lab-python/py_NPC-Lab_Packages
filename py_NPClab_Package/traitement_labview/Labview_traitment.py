@@ -20,7 +20,7 @@ from py_NPClab_Package.utilitaire_traitement.Decorateur import mesure
 from collections import defaultdict
 
 Norme_Coordonnee_Vecteur = Tuple[Series, Series]
-Trajectoire = Tuple[ndarray, ndarray, ndarray]
+Trajectoire = DataFrame
 import logging
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
@@ -54,7 +54,7 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
 
         self.reward_omission_from_traj: Tuple[Series, Series] = None
         self._reward_raw: ndarray = np.array([], dtype=int)
-        self.reward_from_txt: Series = pd.Series(dtype=int)
+        self.reward_from_txt_frame_time: Series = pd.Series(dtype=int)
         self.base_time: Series = pd.Series(dtype=int)
         self.item: List[str] = None
         self.couple_de_points: List[List[str]] = None
@@ -84,7 +84,7 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
         construction des vecteurs temps pour le plot de la longueur de la trajectoire
         :return:
         """
-        longueur_trajectoire: int = len(trajectoire[0])
+        longueur_trajectoire: int = len(trajectoire)
         time_index = pd.RangeIndex(0, longueur_trajectoire, 1)
         base_time: Series = pd.Series(np.arange(0, longueur_trajectoire * self.sampling_video, self.sampling_video), time_index, dtype=int)
         return base_time
@@ -92,14 +92,16 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
     @mesure
     def _extraction_reward_times_(self, reward_time: Series, base_time: Series) -> Series:
         """
-            extraction des temps des rewards recallés sur la base de temps de la trajectoire (video
+            Recallage ou conversion des temps des rewards, contenue dans le fichier texte,
+             de "ms" à la base de temps en frame.
+
         :param reward_time: temps contenue dans le fichier
         :param base_time:
         :return:
         """
         logging.debug(f'Nombre de reward from txt : {len(reward_time)}')
 
-        rr = pd.Series([], dtype=int)
+        reward_from_txt_frame_time = pd.Series([], dtype=int)
         for i in range(len(reward_time)):
             _tmp = base_time[(base_time >= reward_time.iloc[i] - 250) & (base_time <= reward_time.iloc[i] + 250)]
             y = _tmp - reward_time.iloc[i]
@@ -107,12 +109,16 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
             y = y[y == y.min()]
             if len(y) > 1:
                 y = y.drop_duplicates()
-            rr = rr.append(base_time[y.index])
-
-
+            reward_from_txt_frame_time = reward_from_txt_frame_time.append(base_time[y.index])
+        try:
+            assert len(reward_from_txt_frame_time) == len(reward_time)
+        except AssertionError:
+            logging.debug(f'Il y a un problème entre le nombre de reward dans le fichier reward '
+                          f'et le nombre recallé')
+            sys.exit()
         # _reward_from_txt = self._extraction_event_times_(event_time=reward_time, base_time=base_time)
         # reward_from_txt: Series = pd.Series(base_time[_reward_from_txt], dtype=int)
-        return rr
+        return reward_from_txt_frame_time
 
 
     def plot_event(self, idx: int, ax: Axes, type_reward: str = None):
@@ -149,18 +155,6 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
         #     ax.set(ylim=(0, 500))
         # fig.show()
 
-    def _make_data_from_traj_(self, trajectoire: Trajectoire) -> DataFrame:
-        """
-        Transformation du fichier xxxtraj.txt en DataFrame
-        :param trajectoire: tuple(ndarray)
-        :return:
-        """
-        event_time1: Series = pd.Series(trajectoire[0], name='trajectoire_x')
-        event_time2: Series = pd.Series(trajectoire[1], name='trajectoire_y')
-        event_time3: Series = pd.Series(trajectoire[2], name='reward')
-        data: DataFrame = pd.DataFrame(
-            {event_time1.name: event_time1, event_time2.name: event_time2, event_time3.name: event_time3})
-        return data
 
     def make_reward_from_traj(self, data_reward: Series, reward_from_txt: Series):
         self.passage_from_traj = self._search_passage_from_traj_(data_reward, self.base_time)
@@ -181,7 +175,7 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
         data = pd.Series(np.array(data), index=new_index)
         for idx in range(1, len(data) - 1):
             if data[idx] != data[idx + 1]:
-                passage.loc[idx+1] = True
+                passage.loc[idx] = True
         return passage
 
     def _search_reward_omission_from_traj_(self, passage_from_traj: Series, reward_from_txt: Series, base_time: Series) -> Tuple[Series, Series]:
@@ -227,13 +221,16 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
     def omission(self) -> Series:
         return pd.Series(self.base_time[self.all_data['omissions']],
                   index=self.all_data['omissions'][self.all_data['omissions'] == True].index)
+
     @property
     def reward(self) -> Series:
         return pd.Series(self.base_time[self.all_data['rewards']],
                   index=self.all_data['rewards'][self.all_data['rewards'] == True].index)
+
     @property
     def delta_time_reward(self) -> ndarray:
-        return np.array(self.base_time[self.all_data['rewards']]) - np.array(self.reward_from_txt)
+        return np.array(self.base_time[self.all_data['rewards']]) - np.array(self.reward_from_txt_frame_time)
+
     @property
     def format_correction(self):
         format_data = defaultdict(DataFrame)
@@ -241,38 +238,74 @@ class AnalyseFromLabview(PrePlot, ExtractEvent):
             {'x': self.all_data['trajectoire_x'], 'y': self.all_data['trajectoire_y']})
         return format_data
 
+    @property
+    def demitour(self):
+        """ % de retour ex: seq ABA """
+        nbreturn = sum(self.all_data['reward'].diff(2) == 0)
+        return nbreturn / (len(self.all_data['reward']) - 2)
+
+    @property
+    def successrate(self):
+        """ % de retour ex: seq ABA
+        self.seqChoix (self.all_data['reward']) correspond au  point par frame donc 6001 pour 5min
+        self.seqReward (self.reward_original) correspond au reward contenue dans le fichier txt reward
+        """
+        ll = len(self.all_data['reward'])
+        ll2 = len(self.reward_original)
+        return ll2 / ll
+
+    @property
+    def distrib(self):
+        """ proportion de choix A,B ou C """
+        propList = []
+        for i in range(0,3,1):
+            propList.append(sum(self.all_data['reward'] == i) / len(self.all_data['reward']))
+        return propList
+
+    @property
+    def timetogoal(self):
+        """ mean time between two targets
+        self.TimeChoix (self.time_passage) correspond au temps des passages sur les points basé sur les frames
+        """
+        return self.time_passage.diff().mean()
 
     def load_data_from_labview(self, trajectoire: LabviewFilesTrajectory, reward: LabviewFilesReward) -> DataFrame:
         """
         param reward: correspond au temps brute directement recupéré du fichier txt issue de LabviewFilesReward
+        
         """
-        self.base_time = self._make_basetime_from_traj_(trajectoire.data)
-        self.all_data = self._make_data_from_traj_(trajectoire.data)
-        self.reward_from_txt = self._extraction_reward_times_(reward.data, self.base_time)
-        self.make_reward_from_traj(self.all_data['reward'], self.reward_from_txt)
+        self.reward_original = reward.data
+        self.base_time = self._make_basetime_from_traj_(trajectoire=trajectoire.data)
+        self.all_data = trajectoire.data
+        self.reward_from_txt_frame_time = self._extraction_reward_times_(reward.data['reward_time'], self.base_time)
+        self.make_reward_from_traj(self.all_data['reward'], self.reward_from_txt_frame_time)
         self.all_data = self._make_good_format_data_(self.all_data, self.reward_omission_from_traj)
         # SavingMethodes.save_data_text(data=self.omission, name='omission_cpl-07', path= trajectoire.dir.split('*')[0])
         # SavingMethodes.save_data_text(data=self.reward, name='reward_cpl-07', path= reward.dir.split('*')[0])
+        self.calcul_transition()
+        self.classification_reward()
+        return self.all_data
 
+    def calcul_transition(self):
         ss = self.all_data['rewards'] | self.all_data['omissions']
+        self.choise_all = self.all_data['reward'][ss]
         rewards = self.all_data['reward'][self.all_data['rewards']]
         omissions = self.all_data['reward'][self.all_data['omissions']]
-        ttt = pd.Series(np.nan, index=pd.RangeIndex(0, len(self.all_data['reward'])), name='transitions', dtype=str)
-        ttt[rewards.index] = 'reward'
-        ttt[omissions.index] = 'omission'
-        transition = ttt[ttt.notna()]
-        return self.all_data
+        transition = pd.Series(np.nan, index=pd.RangeIndex(0, len(self.all_data['reward'])), name='transitions', dtype=str)
+        transition[rewards.index] = 'reward'
+        transition[omissions.index] = 'omission'
+        self.transitions = transition[transition.notna()]
 
     def classification_reward(self):
         """
-        Le point "-1" est remplacé par "10" précedament
         on obtient un dataframe contenant toutes les transitions entre les points
         """
         # zz = [np.array([str(i[0]) + str(i[1])])[0] for i in iter.permutations(set(self.all_data['reward']), 2)]
         e = self.all_data['reward'].astype(str)
         f = np.array(e)
         f = f.sum()
-        model_pattern_transition = ['0011', '001010', '0022', '1100', '111010', '1122', '101000', '01011', '01022', '2200', '2211', '221010']
+
+        model_pattern_transition = ['0011', '0022', '1100', '1122', '-1-100', '-1-111', '-1-122', '2200', '2211']
         transitions_points = pd.DataFrame(columns=model_pattern_transition)
         for i in model_pattern_transition:
             iterator_find = re.finditer(i, f)

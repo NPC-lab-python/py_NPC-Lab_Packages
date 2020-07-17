@@ -72,6 +72,7 @@ class SaveSerialisation(VerifDossier):
 
         with sh.open(path + '\\' + name) as data:
             data_extract = data[name]
+        logging.debug(f'type du fichier loader {type(data_extract)}, name : {name}, path : {path}')
         return data_extract
 
     def _set_conf_(self, name: str, dir_save_conf: str, data: object) -> object:
@@ -87,7 +88,7 @@ class SaveSerialisation(VerifDossier):
         save_conf = sh.open(dir)
         save_conf[dir.split('\\')[-1]] = data
         save_conf.close()
-        logging.debug(f'Création du fichier {name}')
+        logging.debug(f'Création du fichier {name} dans le folder : {dir_save_conf}')
 
     def _get_conf_(self, name: str, name_folder: str = None, dir_save_conf: str = None, other_path: str = None) -> Tuple[int, str]:
         """
@@ -103,6 +104,8 @@ class SaveSerialisation(VerifDossier):
         :return: retourne un tuple contenant en [0] un "int" pour absent ou present
         et en [1] le chemin
         """
+        logging.debug(f'Vérification de l"existance du fichier {name}')
+
         if isinstance(other_path, type(None)) and not isinstance(dir_save_conf, type(None)):
             if isinstance(name_folder, type(None)):
                 dir_data = self.existe_folder_saving(dir_save_conf)
@@ -113,8 +116,10 @@ class SaveSerialisation(VerifDossier):
             path = [i for i in glob.glob(path_save) if i.find(f'.dat')]
             e = [i for i in path if i.find(name) != -1]
             if len(e) == 0:
+                logging.debug(f'le fichier {name} existe pas ou est introuvable')
                 return 1, dir_data[1]
             else:
+                logging.debug(f'le fichier {name} existe')
                 return 0, dir_data[1]
 
         if not isinstance(other_path, type(None)) and isinstance(dir_save_conf, type(None)):

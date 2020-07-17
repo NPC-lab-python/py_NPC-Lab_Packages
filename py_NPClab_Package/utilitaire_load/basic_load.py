@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('matplotlib').setLevel(logging.WARNING)
 
 Norme_Coordonnee_Vecteur = Tuple[Series, Series]
-Trajectoire = Tuple[ndarray, ndarray, ndarray]
+Trajectoire = DataFrame
 
 from abc import ABC, abstractmethod, abstractclassmethod
 
@@ -58,6 +58,10 @@ class LoadData(object):
 
 
 class NeuralynxFilesSpike(ModelImport):
+    """
+    cette class permet de loader les fichiers ".txt" correspondant aux fichiers des spike_times brutes directement sorti
+    de spikesort3D ou de spikeextractor.
+    """
 
     def __init__(self, dir: str):
         self.dir: str = dir
@@ -66,6 +70,10 @@ class NeuralynxFilesSpike(ModelImport):
         self.data: defaultdict = self._manage_files_(self.path)
 
     def _init_path_(self, dir: str) -> List[str]:
+        """
+        il faut obligatoirement que le nom du fichier contienne "SpikeFile".
+
+        """
         path = [i for i in glob.glob(dir) if i.split('\\')[-1].find('SpikeFile') == 0]
         try:
             assert len(path) > 0
@@ -88,14 +96,22 @@ class NeuralynxFilesSpike(ModelImport):
         # items_segment = self._liste_segment_(event_brute)
         final_output = defaultdict(DataFrame)
         return final_output
-
+    @mesure
     def _load_txt_(self, path: str) -> Series:
-        spike_raw: ndarray = np.array([], dtype=int)
+        # spike_raw: ndarray = np.array([], dtype=int)
         with open(path, 'r') as file:
-            for line in file:
-                spike_raw = np.hstack((spike_raw, int(line.split('\n')[0])))
-        event_time: Series = pd.Series(spike_raw)
+            event_time = pd.Series(list(file))
+        event_time = event_time.apply(self._split_string_)
+        # b = time.time()
+        # with open(path, 'r') as file:
+        #     for line in file:
+        #         spike_raw = np.hstack((spike_raw, int(line.split('\n')[0])))
+        # event_time: Series = pd.Series(spike_raw)
+        # print(time.time()-b)
         return event_time
+
+    def _split_string_(self, a: str) -> int:
+        return int(a.split('\n')[0])
 
     class InitLoader(object):
 
@@ -120,23 +136,54 @@ class LabviewFilesTrajectory(object):
             sys.exit()
 
         return path_traj
-
+    @mesure
     def _load_txt_(self,path_traj) -> Trajectoire:
-
-        trajectoire_x: ndarray = np.array([], dtype=float)
-        trajectoire_y: ndarray = np.array([], dtype=float)
-        reward_raw: ndarray = np.array([], dtype=int)
         print(f'path : {path_traj}')
         with open(path_traj[0], 'r') as file:
-            for line in file:
-                trajectoire_x = np.hstack((trajectoire_x, float(line.split('\t')[0].replace(',','.'))))
-                trajectoire_y = np.hstack((trajectoire_y, float(line.split('\t')[1].replace(',','.'))))
-                if float(line.split('\t')[2].split(',')[0]) == -1:
-                    reward_raw = np.hstack((reward_raw, int(float(line.split('\t')[2].split(',')[0])**10*10)))
-                else:
-                    reward_raw = np.hstack((reward_raw, int(float(line.split('\t')[2].split(',')[0]))))
+            # event_time2 = pd.DataFrame([])
+            event_time = pd.Series(list(file))
+            # event_time2['trajectoire_x'] = event_time.apply(self._split_string_traj_x_)
+            # event_time2['trajectoire_y'] = event_time.apply(self._split_string_traj_y_)
+            # event_time2['reward_raw'] = event_time.apply(self._split_string_traj_r_)
+            event_time2 = pd.DataFrame({'trajectoire_x': event_time.apply(self._split_string_traj_x_),
+            'trajectoire_y': event_time.apply(self._split_string_traj_y_),
+            'reward': event_time.apply(self._split_string_traj_r_)})
+        return event_time2
 
-        return trajectoire_x, trajectoire_y, reward_raw
+    # def _load_txt_(self, path_traj) -> Trajectoire:
+    #
+    #     # trajectoire_x: ndarray = np.array([], dtype=float)
+    #     # trajectoire_y: ndarray = np.array([], dtype=float)
+    #     reward_raw: ndarray = np.array([], dtype=int)
+    #     print(f'path : {path_traj}')
+    #     with open(path_traj[0], 'r') as file:
+    #         for line in file:
+    #             event_time = pd.Series(list(file))
+    #             trajectoire = self._split_string_(event_time)
+    #
+    #             # trajectoire_x = np.hstack((trajectoire_x, float(line.split('\t')[0].replace(',','.'))))
+    #             # trajectoire_y = np.hstack((trajectoire_y, float(line.split('\t')[1].replace(',','.'))))
+    #             if float(line.split('\t')[2].split(',')[0]) == -1:
+    #                 reward_raw = np.hstack((reward_raw, int(float(line.split('\t')[2].split(',')[0]) ** 10 * 10)))
+    #             else:
+    #                 reward_raw = np.hstack((reward_raw, int(float(line.split('\t')[2].split(',')[0]))))
+    #
+    #     # return trajectoire_x, trajectoire_y, reward_raw
+    #
+    #     return trajectoire, reward_raw
+    # def _split_string_traj_x_(self, line: str) -> float:
+    #     {'trajectoire_x': float(line.split('\t')[0].replace(',', '.')),'trajectoire_y': float(line.split('\t')[1].replace(',', '.')), 'reward_raw': int(
+    #       float(line.split('\t')[2].split(',')[0]))})
+    #     return
+
+    def _split_string_traj_x_(self, file: str) -> float:
+        return float(file.split('\t')[0].replace(',', '.'))
+
+    def _split_string_traj_y_(self, file: str) -> float:
+        return float(file.split('\t')[1].replace(',', '.'))
+
+    def _split_string_traj_r_(self, file: str) -> int:
+        return int(file.split('\t')[2].replace(',', '.').split('.')[0])
 
     class InitLoader(object):
         def load(self,dir):
@@ -161,13 +208,21 @@ class LabviewFilesReward(object):
             sys.exit()
         return path
 
-    def _load_txt_(self, path: List[str]) -> Series:
+    def _load_txt_(self, path: List[str]) -> DataFrame:
         reward_raw: ndarray = np.array([], dtype=int)
         with open(path[0], 'r') as file:
-            for line in file:
-                reward_raw = np.hstack((reward_raw, int(line.split('\t')[0])))
-        event_time: Series = pd.Series(reward_raw)
-        return event_time
+            # for line in file:
+                # reward_raw = np.hstack((reward_raw, int(line.split('\t')[0])))
+            event_time: Series = pd.Series(file)
+        data_reward = pd.DataFrame({'reward_time':event_time.apply(self._split_string_time_),
+        'choise':event_time.apply(self._split_string_choise_)})
+        return data_reward
+
+    def _split_string_time_(self, file: str) -> int:
+        return int(file.split('\t')[0])
+
+    def _split_string_choise_(self, file: str) -> int:
+        return int(file.split('\t')[1])
 
     class InitLoader(object):
         def load(self, dir: str):
@@ -187,14 +242,16 @@ class NeuroneFilesSerialiser(object):
 
         path_save = f'{dir}\\*.dat'
         path = [i for i in glob.glob(path_save) if i.find(f'.dat')]
+        select_files = [i for i in path if i.find(name) != -1]
+
         try:
-            assert len(path) > 0
+            assert len(select_files) > 0
         except AssertionError as e:
             logging.debug(f'Il y a un problème avec le chemin du fichier '
-                          f'ou le fichier "neurone" est introuvable ')
+                          f'ou le fichier "{name}" est introuvable. ')
             sys.exit()
-        e = [i for i in path if i.find(name) != -1]
-        return e
+        logging.debug(f'le fichier "{name}" est présent. ')
+        return select_files
 
     def _load_serialiser_file_(self, path: List[str], name: str) -> Series:
         with sh.open(path[0][:-4]) as data:

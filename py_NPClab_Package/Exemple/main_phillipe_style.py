@@ -17,7 +17,7 @@ dir_profile_pattern: str = r'Y:\Analyse_maxime\profile_pattern'
 # dir_txt_traj: str = r'Y:\Analyse_maxime\cplx25\fichier_traj\*.txt'
 
 num_segment = 1
-name_neurone: str = 'segment1_SpikeFile_CSC2_CSC6_CSC7_CSC10_SS_01'
+name_neurone: str = 'segment1_neurone0'
 
 dir_global = r'Y:\Analyse_maxime'
 
@@ -28,7 +28,7 @@ dir_spikefile: str = r'Y:\Analyse_maxime\cplx07 + bsl\clustering\*.txt'
 dir_txt_traj: str = r'Y:\Analyse_maxime\cplx07 + bsl\fichier_traj\*.txt'
 
 # ------------------------------------initialisation et creation du set de données ---------------------------
-#
+
 # event = EventInit(dir_data=dir_data)
 # event.set_event()
 #
@@ -36,7 +36,9 @@ dir_txt_traj: str = r'Y:\Analyse_maxime\cplx07 + bsl\fichier_traj\*.txt'
 # segment.set_segment()
 #
 # neurones = NeuroneInit(dir_data=dir_data, dir_save=dir_save, dir_spikefile=dir_spikefile)
-# neurones.set_neurone(neurones=[f'{"SpikeFile_CSC2_CSC6_CSC7_CSC10_SS_01_brute"}'])
+# neurones.set_neurone(neurones=['neurone0_brute'], num_segment=0)
+# #
+# neurones.set_neurone(neurones=['neurone0_brute', 'neurone1_brute', 'neurone2_brute', 'neurone3_brute'], num_segment=0)
 
 #------------------------------------- parti import data labview ---------------------------------------------------
 
@@ -45,6 +47,9 @@ dir_txt_traj: str = r'Y:\Analyse_maxime\cplx07 + bsl\fichier_traj\*.txt'
 trajectoire = LoadData.init_data(LabviewFilesTrajectory, dir_txt_traj)
 # chargement des temps en ms "temps" contenu dans le fichier rewards
 reward = LoadData.init_data(LabviewFilesReward, dir_txt_traj)
+print(reward.name_file)
+print(trajectoire.name_file)
+
 
 # traitement
 data_AFL = AnalyseFromLabview()
@@ -122,14 +127,6 @@ from py_NPClab_Package.utilitaire_load.basic_load import NeuroneFilesSerialiser
 
 # name_neurone = 'segment0_neurone0'
 neurone = LoadData.init_data(NeuroneFilesSerialiser, dir_save, name_neurone)
-
-a = pd.DataFrame({'index_in_raw':neurone.data['time_index_in raw'], 'time': neurone.data['time_brute'],
-                  'time_synchro_video': neurone.data['time']-reward.reward_time_ref_rmz,
-                  'time_synchro_bool': ((neurone.data['time']-reward.reward_time_ref_rmz)>0) & ((neurone.data['time']-reward.reward_time_ref_rmz)<300)})
-a.to_csv(r'Y:\Analyse_maxime\test.txt', header=True, sep='\t', index=False)
-a.to_csv(r'Y:\Analyse_maxime\test.txt', columns=['time_synchro_video'], header=False, sep='\t', index=False)
-a[a['time_synchro_bool']].to_csv(r'Y:\Analyse_maxime\test.txt', columns=['time_synchro_video'], header=False, sep='\t', index=False)
-
 
 # ------------------------------------- parti preparation des données pour le plot avec spike---------
 from py_NPClab_Package.utilitaire_plot.BasicPlotSpike import GenericPlotV2
